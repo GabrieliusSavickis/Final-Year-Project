@@ -1,23 +1,21 @@
 const express = require('express');
 const app = express();
-const port = 5000;
+const port = 4000;
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const session = require('express-session');
-
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
 app.use(express.json());
 
-// Configure session middleware
-app.use(session({
-  secret: 'your_secret_key',
-  resave: false,
-  saveUninitialized: false,
-}));
+// Opens a connection to the database on our locally running instance of mongodb
+main().catch(err => console.log(err));
+async function main() {
+  await mongoose.connect('mongodb+srv://invictus:invictusfyp@clusterfyp.3lmfd7v.mongodb.net/Users?retryWrites=true&w=majority');
+  // using await because database has authentication
+}
 
 // Mongoose database
 main().catch((err) => {
@@ -25,13 +23,27 @@ main().catch((err) => {
   process.exit(1);
 });
 
-// Opens a connection to the database on our locally running instance of mongodb
-main().catch(err => console.log(err));
-async function main() {
-  await mongoose.connect('mongodb+srv://invictus:invictusfyp@clusterfyp.3lmfd7v.mongodb.net/?retryWrites=true&w=majority');
-  // using await because database has authentication
-}
-
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+const userSchema = mongoose.Schema({
+  height: Number,
+  weight: Number,
+}, {
+  // Shows when changes are made to the data
+  timestamps: true,
+});
+
+const User = mongoose.model('User', userSchema);
+
+//app post
+app.post('http://localhost:4000/users', async (req, res) => {
+  const user = new User({
+    height: req.body.height,
+    weight: req.body.weight,
+  });
+  await user.save();
+  res.send(user);
+});
+
