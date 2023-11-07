@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = 4000;
+const port = 3000;
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -17,12 +17,6 @@ async function main() {
   // using await because database has authentication
 }
 
-// Mongoose database
-main().catch((err) => {
-  console.error('Error connecting to MongoDB:', err);
-  process.exit(1);
-});
-
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
@@ -38,7 +32,7 @@ const userSchema = mongoose.Schema({
 const User = mongoose.model('User', userSchema);
 
 //app post
-app.post('http://localhost:4000/users', async (req, res) => {
+app.post('/users', async (req, res) => {
   const user = new User({
     height: req.body.height,
     weight: req.body.weight,
