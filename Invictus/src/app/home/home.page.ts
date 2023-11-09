@@ -24,7 +24,7 @@ export class HomePage {
     };
 
     // Send a POST request to your Express.js server
-    this.httpClient.post('/users', data).subscribe((response) => {
+    this.httpClient.post('http://localhost:3000/home', data).subscribe((response) => {
       console.log('Data saved:', response);
       // You can add more handling or feedback to the user here
     });
