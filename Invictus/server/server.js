@@ -13,7 +13,7 @@ app.use(express.json());
 // Opens a connection to the database on our locally running instance of mongodb
 main().catch(err => console.log(err));
 async function main() {
-  await mongoose.connect('mongodb+srv://invictus:invictusfyp@clusterfyp.3lmfd7v.mongodb.net/Users?retryWrites=true&w=majority');
+  await mongoose.connect('mongodb+srv://invictus:invictusfyp@clusterfyp.3lmfd7v.mongodb.net/Users');
   // using await because database has authentication
 }
 
@@ -32,12 +32,16 @@ const userSchema = mongoose.Schema({
 const User = mongoose.model('User', userSchema);
 
 //app post
-app.post('/users', async (req, res) => {
-  const user = new User({
-    height: req.body.height,
-    weight: req.body.weight,
-  });
-  await user.save();
-  res.send(user);
+app.post('/home', async (req, res) => {
+  try {
+    const user = new User({
+      height: req.body.height,
+      weight: req.body.weight,
+    });
+    await user.save();
+    res.send(user);
+  } catch (error) {
+    res.status(500).send('Error saving user data'); //trying to catch the error
+  }
 });
 
