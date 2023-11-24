@@ -1,6 +1,7 @@
-import { Component, Inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { AuthService } from '@auth0/auth0-angular';
-import { DOCUMENT } from '@angular/common';
+import { Router } from '@angular/router';
+
 
 @Component({
   selector: 'app-login',
@@ -9,9 +10,16 @@ import { DOCUMENT } from '@angular/common';
 })
 export class LoginPage{
 
-  constructor(@Inject(DOCUMENT) public document:Document, public auth: AuthService) {}
-  loginWithRedirect() {
-    this.auth.loginWithRedirect();
+  constructor(public auth:AuthService, private router:Router) {}
+  ngOnInit() {
+    // Subscribe to authentication state changes
+    this.auth.isAuthenticated$.subscribe((isAuthenticated) => {
+      if (isAuthenticated) {
+        // If authenticated, navigate to the home page
+        this.router.navigate(['/home']);
+      }
+    });
   }
+  
   
 }
