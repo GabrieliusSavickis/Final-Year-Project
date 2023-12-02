@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AuthService } from '@auth0/auth0-angular';
 import { Router } from '@angular/router';
 
@@ -8,9 +8,9 @@ import { Router } from '@angular/router';
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
 })
-export class LoginPage{
+export class LoginPage {
 
-  constructor(public auth:AuthService, private router:Router) {}
+  constructor(public auth: AuthService, private router: Router) { }
   ngOnInit() {
     // Subscribe to authentication state changes
     this.auth.isAuthenticated$.subscribe((isAuthenticated) => {
@@ -20,6 +20,4 @@ export class LoginPage{
       }
     });
   }
-  
-  
 }

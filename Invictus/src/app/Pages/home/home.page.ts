@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
 })
-export class HomePage{
+export class HomePage {
   height: number;
   weight: number;
 
@@ -18,7 +18,7 @@ export class HomePage{
     this.weight = 0;
   }
 
-  
+
 
   saveData() {
     // Prepare the data to send to the server
