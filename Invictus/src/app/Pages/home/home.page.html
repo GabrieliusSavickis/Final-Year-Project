@@ -1,14 +1,11 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-buttons slot="start">     
-        <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
-    </ion-buttons>
     <ion-buttons slot="end">
       <ion-button (click)="logout()">
-        Logout
+        <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title> INVICTUS </ion-title>
+    <ion-title class="ion-text-center"> INVICTUS </ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -26,3 +23,27 @@
     <ion-button type="submit" expand="block">SAVE</ion-button>
   </form>
 </ion-content>
+
+<ion-tabs>
+  <ion-tab-bar slot="bottom">
+    <ion-tab-button tab="home">
+      <ion-icon name="home-outline"></ion-icon>
+      <ion-label>Home</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="exercises">
+      <ion-icon name="barbell-outline"></ion-icon>
+      <ion-label>Exercises</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="trainer">
+      <ion-icon name="chatbubbles"></ion-icon>
+      <ion-label>Trainer</ion-label>
+    </ion-tab-button>
+
+    
+    <ion-tab-button tab="profile">
+      <ion-icon name="person-outline"></ion-icon>
+      <ion-label>Profile</ion-label>
+    </ion-tab-button>
+  </ion-tab-bar>
