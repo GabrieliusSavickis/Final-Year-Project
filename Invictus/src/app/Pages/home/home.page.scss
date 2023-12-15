@@ -25,3 +25,120 @@
 #container a {
   text-decoration: none;
 }
+
+.calendar-card {
+  margin: 10px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.week-number {
+  text-align: center;
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.week-days {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px;
+  margin: 10px 0;
+  background-color: #f2f2f2;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.day {
+  text-align: center;
+  padding: 5px;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  line-height: 30px; // Vertically center the text
+  font-weight: bold;
+  color: #535353; // Default text color
+}
+
+.workout-day {
+  color: #4CAF50; // Green text color for workout days
+}
+
+.timer-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f2f2f2;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 10px;
+}
+
+.timer-display {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #333;
+}
+
+.start-stop-button {
+  padding: 10px 20px;
+  font-size: 1em;
+  border: none;
+  border-radius: 5px;
+  background-color: #4CAF50; // Green background for start
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &.stop {
+    background-color: #f44336; // Red background for stop
+  }
+}
+
+.sample-workout {
+  margin: 0px;
+  
+}
+
+.workout-card {
+  border-radius: 10px;
+  
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%; /* Set the same width as the timer container */
+}
+
+ion-card-header {
+  font-weight: bold;
+}
+
+ion-card-content {
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  li {
+    margin: 5px 0;
+  }
+}
+
+.overall-workout-time {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.overall-workout-time h2 {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.time-display {
+  font-size: 2em;
+  font-weight: bold;
+  color: #333;
+}

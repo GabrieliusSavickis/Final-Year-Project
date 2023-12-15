@@ -32,7 +32,7 @@ const userSchema = mongoose.Schema({
 const User = mongoose.model('User', userSchema);
 
 //app post
-app.post('/home', async (req, res) => {
+app.post('/tabs/trainer', async (req, res) => {
   try {
     const user = new User({
       height: req.body.height,

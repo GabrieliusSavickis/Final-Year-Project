@@ -16,7 +16,7 @@ export class LoginPage {
     this.auth.isAuthenticated$.subscribe((isAuthenticated) => {
       if (isAuthenticated) {
         // If authenticated, navigate to the home page
-        this.router.navigate(['/home']);
+        this.router.navigate(['/tabs/home']);
       }
     });
   }
