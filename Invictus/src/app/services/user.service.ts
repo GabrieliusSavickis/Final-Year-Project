@@ -17,6 +17,4 @@ export class UserService {
       tap(user => this.userProfileSubject.next(user))
     ).subscribe();
   }
-
-  // Other user related methods can be added here
 }

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ExerciseCategory, Exercise } from './exercises-data';
+import { AuthService, LogoutOptions } from '@auth0/auth0-angular';
 
 
 @Component({
@@ -27,7 +28,10 @@ export class ExercisesPage {
     },
     // Add more categories and exercises
   ];
-  constructor(private router: Router) {}
+  constructor(private router: Router, public auth: AuthService) {}
+  logout() {
+    this.auth.logout({ returnTo: `${window.location.origin}/login` } as LogoutOptions);
+  }
 
   toggleCategory(category: ExerciseCategory) {
     category.expanded = !category.expanded;

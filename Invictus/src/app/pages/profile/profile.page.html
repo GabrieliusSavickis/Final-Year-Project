@@ -5,12 +5,16 @@
 </ion-header>
 
 <ion-content>
-  <div *ngIf="userProfile">
-    <ion-avatar>
+  <div class="profile-header">
+    <ion-avatar class="profile-picture">
       <img [src]="userProfile.picture" alt="Profile Picture">
     </ion-avatar>
-    <ion-label>
-      {{ userProfile.name }}
-    </ion-label>
+    <div class="profile-details">
+      <h2>{{ userProfile.name }}</h2>
+      <div class="calendar-container">
+        <!-- Inline calendar HTML or shared component -->
+        <!-- Make sure to bind the required data and methods -->
+      </div>
+    </div>
   </div>
 </ion-content>

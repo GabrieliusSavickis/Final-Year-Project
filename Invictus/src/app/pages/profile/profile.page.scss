@@ -1,0 +1,28 @@
+.profile-header {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+  }
+  
+  .profile-picture {
+    margin-right: 15px;
+  }
+  
+  .profile-details {
+    flex: 1;
+    h2 {
+      margin-bottom: 5px;
+    }
+    .calendar-container {
+      display: flex;
+      flex-direction: column;
+      // Add calendar styles here, you can reuse styles from home.page.scss
+      .week-number {
+        // Your styles...
+      }
+      .week-days {
+        // Your styles...
+      }
+    }
+  }
+  
