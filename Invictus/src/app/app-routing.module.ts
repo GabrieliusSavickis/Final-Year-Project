@@ -7,7 +7,7 @@ const routes: Routes = [
   // Upon deployment redirect user to the login page
   {
     path: '',
-    loadChildren: () => import('./Pages/login/login.module').then( m => m.LoginPageModule)
+    loadChildren: () => import('./pages/login/login.module').then( m => m.LoginPageModule)
   },
   {
     path: 'tabs',
@@ -15,26 +15,26 @@ const routes: Routes = [
     children: [ // This is where the tabs are defined
       {
         path: 'home',
-        loadChildren: () => import('./Pages/home/home.module').then( m => m.HomePageModule)
+        loadChildren: () => import('./pages/home/home.module').then( m => m.HomePageModule)
       },
       {
         path: 'exercises',
-        loadChildren: () => import('./Pages/exercises/exercises.module').then( m => m.ExercisesPageModule)
+        loadChildren: () => import('./pages/exercises/exercises.module').then( m => m.ExercisesPageModule)
       },
       {
         path: 'trainer',
-        loadChildren: () => import('./Pages/trainer/trainer.module').then( m => m.TrainerPageModule)
+        loadChildren: () => import('./pages/trainer/trainer.module').then( m => m.TrainerPageModule)
       },
       {
         path: 'profile',
-        loadChildren: () => import('./Pages/profile/profile.module').then( m => m.ProfilePageModule)
+        loadChildren: () => import('./pages/profile/profile.module').then( m => m.ProfilePageModule)
       },
     ]
 
   },
   {
     path: 'home',
-    loadChildren: () => import('./Pages/home/home.module').then( m => m.HomePageModule)
+    loadChildren: () => import('./pages/home/home.module').then( m => m.HomePageModule)
   },
 ];
 

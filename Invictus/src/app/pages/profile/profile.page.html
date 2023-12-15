@@ -1,0 +1,16 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Profile</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div *ngIf="userProfile">
+    <ion-avatar>
+      <img [src]="userProfile.picture" alt="Profile Picture">
+    </ion-avatar>
+    <ion-label>
+      {{ userProfile.name }}
+    </ion-label>
+  </div>
+</ion-content>

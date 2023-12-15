@@ -1,0 +1,23 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Exercises</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-card *ngFor="let category of exerciseCategories" (click)="toggleCategory(category)">
+      <ion-card-header>
+        {{ category.name }}
+      </ion-card-header>
+      <ion-card-content *ngIf="category.expanded">
+        <img src="category.imageUrl" alt="{{ category.name }} Image" class="exercise-image">
+        <ion-list>
+          <ion-item *ngFor="let exercise of category.exercises" (click)="showExerciseDetails(exercise)">
+            {{ exercise.name }}
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </ion-list>
+</ion-content>
