@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { UserService } from '../../services/user.service';
 import { AuthService, LogoutOptions } from '@auth0/auth0-angular';
 import { HttpClient } from '@angular/common/http';
+import { ChartData, ChartOptions, ChartType } from 'chart.js';
 
 @Component({
   selector: 'app-profile-page',
@@ -75,6 +76,20 @@ workoutPlan = [
   // Add more days as needed
 ];
 
-
+ // Properties for the chart
+ public pieChartOptions: ChartOptions = {
+  responsive: true,
+  // Add any additional options here
+};
+public pieChartLabels: string[] = ['Carbs', 'Protein', 'Fat'];
+public pieChartData: ChartData<'pie', number[], string> = {
+  labels: this.pieChartLabels,
+  datasets: [{
+    data: [45, 25, 30], // Example data, replace with real data
+    backgroundColor: ['blue', 'green', 'red'], // Add your colors
+    hoverBackgroundColor: ['lightblue', 'lightgreen', 'lightcoral']
+  }]
+};
+public pieChartType: ChartType = 'pie';
+public pieChartLegend = true;
 }
-

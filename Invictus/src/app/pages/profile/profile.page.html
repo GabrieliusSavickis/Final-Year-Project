@@ -71,4 +71,21 @@
         </ion-list>
       </ion-card-content>
     </ion-card>
+
+    <ion-card class="macro-plan">
+      <ion-card-header>
+        <ion-card-title>Current Meal Plan</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="chart-container">
+          <canvas baseChart
+            [data]="pieChartData"
+            [type]="pieChartType"
+            [options]="pieChartOptions"
+            [labels]="pieChartLabels"
+            [legend]="pieChartLegend">
+          </canvas>
+        </div>
+      </ion-card-content>
+    </ion-card>
   </ion-content>
