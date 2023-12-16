@@ -16,7 +16,7 @@
         {{ category.name }}
       </ion-card-header>
       <ion-card-content *ngIf="category.expanded">
-        <img src="category.imageUrl" alt="{{ category.name }} Image" class="exercise-image">
+        <img [src]="category.imageUrl" alt="{{ category.name }} Image" class="exercise-image">
         <ion-list>
           <ion-item *ngFor="let exercise of category.exercises" (click)="showExerciseDetails(exercise)">
             {{ exercise.name }}

@@ -69,8 +69,12 @@ export class HomePage {
    sampleWorkout = {
     name: 'Friday Workout',
     exercises: [
-      { name: 'Push-Ups', sets: 3, repetitions: 10 },
-      { name: 'Squats', sets: 3, repetitions: 12 },
+      { name: 'Bench Press', sets: 4, repetitions: 10 },
+      { name: 'Shoulder Press', sets: 4, repetitions: 12 },
+      { name: 'Tricep Extension', sets: 4, repetitions: 10 },
+      { name: 'Incline Bench Press', sets: 4, repetitions: 8 },
+      { name: 'Lateral Raise', sets: 3, repetitions: 10 },
+      { name: 'Triceps Rop Pushdown', sets: 3, repetitions: 10 },
       // Add more exercises here
     ],
   };
