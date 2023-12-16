@@ -55,4 +55,34 @@
       font-size: 1rem;
     }
   }
+
+  .chart-and-legend-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .chart-container {
+    flex: 0 0 auto; // Do not grow or shrink
+    width: 50%; // Adjust the width as needed
+    height: auto; // Adjust the height as needed
+  }
+  
+  .chart-legend {
+    flex: 1; // Take up the remaining space
+    margin-left: 20px; // Space between chart and legend text
+    p {
+      display: flex;
+      align-items: center;
+      margin: 4px 0; // Space between legend items
+      .legend-color-box {
+        width: 20px; // Adjust the size as needed
+        height: 20px; // Adjust the size as needed
+        display: inline-block;
+        margin-right: 10px; // Space between color box and text
+      }
+      .carbs { background-color: blue; }
+      .protein { background-color: green; }
+      .fat { background-color: red; }
+    }
+  }
   

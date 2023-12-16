@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { ProfilePageRoutingModule } from './profile-routing.module';
 
 import { ProfilePageComponent } from './profile.page';
+import { NgChartsModule  } from 'ng2-charts';
 
 @NgModule({
   imports: [
@@ -14,6 +15,7 @@ import { ProfilePageComponent } from './profile.page';
     FormsModule,
     IonicModule,
     ProfilePageRoutingModule,
+    NgChartsModule,
   ],
   declarations: [ProfilePageComponent]
 })

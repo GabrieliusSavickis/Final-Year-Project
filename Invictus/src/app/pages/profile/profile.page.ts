@@ -91,5 +91,5 @@ public pieChartData: ChartData<'pie', number[], string> = {
   }]
 };
 public pieChartType: ChartType = 'pie';
-public pieChartLegend = true;
+public pieChartLegend = false;
 }
