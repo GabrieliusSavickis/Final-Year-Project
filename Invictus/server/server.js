@@ -59,13 +59,17 @@ app.get('/tabs/profile/:email', async (req, res) => {
   }
 });
 
-// Update user data
 app.post('/tabs/profile/update', async (req, res) => {
+  const query = { email: req.body.email };
+  const update = req.body;
+  const options = { upsert: true, new: true, setDefaultsOnInsert: true };
+
   try {
-    const user = await User.findOneAndUpdate({ email: req.body.email }, req.body, { new: true });
+    const user = await User.findOneAndUpdate(query, update, options);
     res.send(user);
   } catch (error) {
-    res.status(500).send('Error updating user data');
+    console.error('Error updating or creating user data:', error);
+    res.status(500).send('Error updating or creating user data');
   }
 });
 

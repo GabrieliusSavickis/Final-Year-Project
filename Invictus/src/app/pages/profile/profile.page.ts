@@ -34,7 +34,7 @@ export class ProfilePageComponent implements OnInit {
   }
 
   fetchProfileData(email: string) {
-    this.httpClient.get(`http://localhost:3000/profile/${email}`).subscribe((data: any) => {
+    this.httpClient.get(`http://localhost:3000/tabs/profile/${email}`).subscribe((data: any) => {
       this.phone = data.phone;
       this.age = data.age;
       this.gender = data.gender;
@@ -50,7 +50,7 @@ export class ProfilePageComponent implements OnInit {
       gender: this.gender
     };
 
-    this.httpClient.post('http://localhost:3000/profile/update', profileData).subscribe((response) => {
+    this.httpClient.post('http://localhost:3000/tabs/profile/update', profileData).subscribe((response) => {
       console.log('Profile updated:', response);
       // Add any additional logic for a successful update
     }, (error) => {
