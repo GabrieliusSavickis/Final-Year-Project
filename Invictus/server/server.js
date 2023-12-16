@@ -41,6 +41,8 @@ app.post('/tabs/trainer', async (req, res) => {
     const user = new User({
       height: req.body.height,
       weight: req.body.weight,
+      age: req.body.age, 
+      gender: req.body.gender, 
     });
     await user.save();
     res.send(user);
@@ -72,4 +74,3 @@ app.post('/tabs/profile/update', async (req, res) => {
     res.status(500).send('Error updating or creating user data');
   }
 });
-

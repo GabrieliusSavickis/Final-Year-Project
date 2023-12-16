@@ -59,6 +59,22 @@ export class ProfilePageComponent implements OnInit {
     });
 }
 
+workoutPlan = [
+  {
+    day: 'Day 1: Chest, Shoulders & Triceps',
+    exercises: ['Exercise 1', 'Exercise 2', 'Exercise 3']
+  },
+  {
+    day: 'Day 2: Back & Biceps',
+    exercises: ['Exercise 1', 'Exercise 2', 'Exercise 3']
+  },
+  {
+    day: 'Day 3: Legs & Abs',
+    exercises: ['Exercise 1', 'Exercise 2', 'Exercise 3']
+  }
+  // Add more days as needed
+];
+
 
 }
 

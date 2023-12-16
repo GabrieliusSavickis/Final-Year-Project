@@ -1,27 +1,40 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button (click)="logout()">
+        <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
     <ion-title>Trainer</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Trainer</ion-title>
-    </ion-toolbar>
-  </ion-header>
-</ion-content>
-
-<ion-content class="ion-padding">
-  <form (ngSubmit)="saveData()">
-    <ion-item class="ion-margin-bottom">
-      <label for="weight">Weight:</label>
-      <input type="number" id="weight" name="weight" [(ngModel)]="weight">
-    </ion-item>
-    <ion-item>
-      <label for="height">Height:</label>
-      <input type="number" id="height" name="height" [(ngModel)]="height">
-    </ion-item>
-    <ion-button type="submit" expand="block">SAVE</ion-button>
-  </form>
+<ion-content>
+  <div class="ion-padding">
+    <form (ngSubmit)="saveData()">
+      <ion-list lines="full" class="ion-margin-vertical">
+        <ion-item>
+          <ion-label position="stacked">Weight (kg)</ion-label>
+          <ion-input type="number" [(ngModel)]="weight" name="weight" required></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Height (cm)</ion-label>
+          <ion-input type="number" [(ngModel)]="height" name="height" required></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Age</ion-label>
+          <ion-input type="number" [(ngModel)]="age" name="age" required></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Gender</ion-label>
+          <ion-select [(ngModel)]="gender" name="gender" interface="popover" placeholder="Select One">
+            <ion-select-option value="male">Male</ion-select-option>
+            <ion-select-option value="female">Female</ion-select-option>
+            <ion-select-option value="other">Other</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-list>
+      <ion-button type="submit" expand="block" class="ion-margin-top">Save</ion-button>
+    </form>
+  </div>
 </ion-content>

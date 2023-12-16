@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { AuthService, LogoutOptions } from '@auth0/auth0-angular';
 
 @Component({
   selector: 'app-trainer',
@@ -9,10 +10,18 @@ import { HttpClient } from '@angular/common/http';
 export class TrainerPage{
   height: number;
   weight: number;
+  age: number;
+  gender: string;
 
-  constructor(private httpClient: HttpClient) { 
+  constructor(private httpClient: HttpClient, public auth: AuthService) { 
     this.height = 0;
     this.weight = 0;
+    this.age = 0;
+    this.gender = '';
+  }
+
+  logout() {
+    this.auth.logout({ returnTo: `${window.location.origin}/login` } as LogoutOptions);
   }
 
   saveData() {
@@ -20,6 +29,8 @@ export class TrainerPage{
     const data = {
       height: this.height,
       weight: this.weight,
+      age: this.age,
+      gender: this.gender,
     };
 
         // Send a POST request to your Express.js server
@@ -28,7 +39,4 @@ export class TrainerPage{
           // You can add more handling or feedback to the user here
         });
       }
-
-
-
 }

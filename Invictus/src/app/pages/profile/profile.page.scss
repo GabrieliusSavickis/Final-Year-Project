@@ -38,4 +38,21 @@
       color: #666; // A softer color for the email text
     }
   }
+
+  .workout-plan {
+    ion-card-title {
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+  
+    ion-item-divider {
+      --background: #ddd; // Use a distinct background for day dividers
+      --padding-start: 10px; // Adjust padding as needed
+    }
+  
+    ion-label {
+      font-size: 1rem;
+    }
+  }
   

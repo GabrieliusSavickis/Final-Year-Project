@@ -28,6 +28,7 @@
     "@capacitor/keyboard": "5.0.6",
     "@capacitor/status-bar": "5.0.6",
     "@ionic/angular": "^7.0.0",
+    "chart.js": "^4.4.1",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
