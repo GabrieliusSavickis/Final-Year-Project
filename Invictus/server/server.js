@@ -28,6 +28,9 @@ const userSchema = mongoose.Schema({
   phone: String,
   age: Number,
   gender: String,
+  goal: String,
+  fitnessLevel: String,
+  workoutDays: Number,
 }, {
   // Shows when changes are made to the data
   timestamps: true,
@@ -42,7 +45,11 @@ app.post('/tabs/trainer', async (req, res) => {
       height: req.body.height,
       weight: req.body.weight,
       age: req.body.age, 
-      gender: req.body.gender, 
+      gender: req.body.gender,
+      goal: req.body.goal,
+      fitnessLevel: req.body.fitnessLevel,
+      workoutDays: req.body.workoutDays,
+      email: req.body.email,
     });
     await user.save();
     res.send(user);
@@ -58,6 +65,21 @@ app.get('/tabs/profile/:email', async (req, res) => {
     res.send(user);
   } catch (error) {
     res.status(500).send('Error retrieving user data');
+  }
+});
+
+app.get('/tabs/trainer/:email', async (req, res) => {
+  try {
+    const email = req.params.email;
+    const user = await User.findOne({ email: email });
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).send('User not found');
+    }
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    res.status(500).send('Internal Server Error');
   }
 });
 
