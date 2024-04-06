@@ -19,14 +19,57 @@ def generate_workout_plan():
     if not user_preferences:
         return jsonify({"error": "User preferences not found"}), 404
     
-    # Assuming `df` is your DataFrame loaded globally or within this function
-    workout_plan = create_workout_plan(user_preferences, df)
+    # Generate the workout plan DataFrame
+    workout_plan_df = create_workout_plan(user_preferences, df)  # Make sure to use this variable name
 
-    # Convert pandas DataFrame to JSON for the response, if necessary
-    # This depends on how you're planning to use `selected_exercises`
-    plan_json = workout_plan.to_json(orient="records") if isinstance(workout_plan, pd.DataFrame) else workout_plan
+    # Clean the workout_plan DataFrame before converting to JSON
+    cleaned_workout_plan = clean_up_exercises(workout_plan_df)
     
-    return jsonify(plan_json)
+    # Save the cleaned workout plan to MongoDB
+    save_workout_plan_to_mongodb(cleaned_workout_plan, data['email'])
+    
+    # Convert cleaned exercises to JSON for the response
+    plan_json = jsonify(cleaned_workout_plan)
+
+    return plan_json
+
+def clean_up_exercises(workout_plan_df):
+    # Create an empty list to hold cleaned exercises
+    cleaned_exercises = []
+    
+    # Iterate over the DataFrame rows
+    for index, row in workout_plan_df.iterrows():
+        # Initialize an empty dictionary for the cleaned exercise
+        cleaned_exercise = {}
+        
+        # Extract the title and equipment
+        cleaned_exercise['Title'] = row['Title']
+        cleaned_exercise['Equipment'] = row['Equipment']
+        
+        # Extract the body parts; assuming body part columns start with 'BodyPart_'
+        body_parts = [col.replace('BodyPart_', '') for col in workout_plan_df.columns if col.startswith('BodyPart_') and row[col] == 1]
+        
+        # Add the list of body parts to the cleaned exercise
+        cleaned_exercise['BodyParts'] = body_parts
+        
+        # Append the cleaned exercise to the list
+        cleaned_exercises.append(cleaned_exercise)
+    
+    # Return the list of cleaned exercises
+    return cleaned_exercises
+
+def save_workout_plan_to_mongodb(cleaned_workout_plan, user_email):
+    client = MongoClient('mongodb+srv://invictus:invictusfyp@clusterfyp.3lmfd7v.mongodb.net')
+    db = client['Users']
+    workout_plans = db['workout_plans']
+    
+    # Replace 'user_email' with the field name you are using to reference the user
+    workout_plans.update_one(
+        {'email': user_email},
+        {'$set': {'workouts': cleaned_workout_plan}},
+        upsert=True
+    )
+    client.close()
 
 def fetch_user_preferences(email):
     client = None
@@ -108,6 +151,8 @@ def select_exercises(filtered_df, workout_days):
     # Placeholder for selecting exercises based on workout days
     # Implement your logic here based on the requirements
     return ["Exercise 1", "Exercise 2"]  # Example
+
+
 
 @app.route('/')
 def home():
