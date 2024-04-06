@@ -33,30 +33,28 @@ def generate_workout_plan():
 
     return plan_json
 
-def clean_up_exercises(workout_plan_df):
-    # Create an empty list to hold cleaned exercises
-    cleaned_exercises = []
+def clean_up_exercises(workout_plan):
+    cleaned_workout_plan = []
     
-    # Iterate over the DataFrame rows
-    for index, row in workout_plan_df.iterrows():
-        # Initialize an empty dictionary for the cleaned exercise
-        cleaned_exercise = {}
+    for day_plan in workout_plan:
+        day = day_plan['Day']
+        exercises = day_plan['Exercises']
+        cleaned_exercises = []
         
-        # Extract the title and equipment
-        cleaned_exercise['Title'] = row['Title']
-        cleaned_exercise['Equipment'] = row['Equipment']
+        for exercise in exercises:
+            cleaned_exercise = {
+                "Title": exercise['Title'],
+                "Equipment": exercise['Equipment'],
+                "BodyParts": exercise.get('BodyParts', [])  # Assuming 'BodyParts' is a list in your dataset
+            }
+            cleaned_exercises.append(cleaned_exercise)
         
-        # Extract the body parts; assuming body part columns start with 'BodyPart_'
-        body_parts = [col.replace('BodyPart_', '') for col in workout_plan_df.columns if col.startswith('BodyPart_') and row[col] == 1]
-        
-        # Add the list of body parts to the cleaned exercise
-        cleaned_exercise['BodyParts'] = body_parts
-        
-        # Append the cleaned exercise to the list
-        cleaned_exercises.append(cleaned_exercise)
+        cleaned_workout_plan.append({
+            "Day": day,
+            "Exercises": cleaned_exercises
+        })
     
-    # Return the list of cleaned exercises
-    return cleaned_exercises
+    return cleaned_workout_plan
 
 def save_workout_plan_to_mongodb(cleaned_workout_plan, user_email):
     client = MongoClient('mongodb+srv://invictus:invictusfyp@clusterfyp.3lmfd7v.mongodb.net')
@@ -95,64 +93,65 @@ def fetch_user_preferences(email):
             client.close()
 
 def create_workout_plan(user_preferences, df):
-    # Map the goal from MongoDB to the correct DataFrame column name
+    # Maps user goal to dataset columns
     goal_map = {
         "loseWeight": "Type_Cardio",
         "gainMuscle": "Type_Strength"
     }
-    goal_column = goal_map.get(user_preferences['goal'], None)
+    goal_column = goal_map.get(user_preferences['goal'], "Type_Cardio")
 
-    if goal_column is None or goal_column not in df.columns:
-        # Handle the case where the goal does not match expected values
-        print(f"Goal column {goal_column} is not recognized in the DataFrame.")
-        return []
-
-    # Proceed with filtering using the correct column name
-    filtered_df = df[df[goal_column] == 1]
-    
-    # Filter by Fitness Level
+    # Filter by goal and fitness level
     fitness_level_map = {"beginner": 0, "intermediate": 1, "advanced": 2}
-    fitness_level = fitness_level_map.get(user_preferences['fitnessLevel'], 0)
-    filtered_df = filtered_df[filtered_df['Level'] == fitness_level]
-    
-    # Select exercises based on workoutDays and distribute muscle groups
-    # This is a simplified approach. You should adapt it to your requirements.
-    # Define your body parts based on the columns available in your DataFrame
-    body_parts = ['Abdominals', 'Abductors', 'Adductors', 'Biceps', 'Calves', 'Chest', 'Forearms', 'Glutes', 'Hamstrings', 'Lats', 'Lower Back', 'Middle Back', 'Neck', 'Quadriceps', 'Shoulders', 'Traps', 'Triceps']
-    
-    selected_exercises = []
+    fitness_level = fitness_level_map.get(user_preferences['fitnessLevel'], 0)  # Adjusted to match CSV indexing starting at 0
+    filtered_df = df[(df[goal_column] == 1) & (df['Level'] == fitness_level)]  # Ensure equality comparison for Level
 
-    # Assuming user_preferences['workoutDays'] is an integer 1, 2, or 3
-    exercises_per_day = 6
+    # Identify muscle groups from the dataset
+    muscle_groups = [col for col in df.columns if 'BodyPart_' in col]
+    body_parts = [mg.split('_')[1] for mg in muscle_groups if filtered_df[mg].any()]
+    
     days = int(user_preferences['workoutDays'])
-    exercises_per_muscle = exercises_per_day // days
+    muscle_groups_per_day = {
+        1: 6,  # For 1 workout day
+        2: 3,  # For 2 workout days
+        3: 2   # For 3 workout days
+    }[days]
+
+    selected_exercises = []
     
-    # Shuffle the body parts to randomize which ones are chosen
-    random.shuffle(body_parts)
+    for day in range(1, days + 1):
+        day_exercises = {'Day': day, 'Exercises': []}
+        muscle_groups_covered = 0
+        # It's important to shuffle body parts inside the loop to reset the selection for each day
+        random.shuffle(body_parts)  
+
+        for body_part in body_parts[:]:  # Iterate on a copy of body_parts to safely modify the original list
+            if muscle_groups_covered < muscle_groups_per_day:
+                exercises_for_body_part = filtered_df[filtered_df[f'BodyPart_{body_part}'] == 1]
+
+                if not exercises_for_body_part.empty:
+                    # Always select 3 exercises per muscle group
+                    required_exercises = 3
+                    selected = exercises_for_body_part.sample(n=min(len(exercises_for_body_part), required_exercises)).to_dict('records')
+                    for exercise in selected:
+                        # Extract body parts for the current exercise
+                        body_parts_involved = [body_part.split('_')[1] for body_part in muscle_groups if exercise[body_part] == 1]
+                        exercise_details = {
+                            "Title": exercise['Title'],
+                            "Equipment": exercise['Equipment'],
+                            "BodyParts": body_parts_involved  # Add the list of body parts involved in this exercise
+                        }
+                        # Use exercise_details instead of 'selected' directly
+                        day_exercises['Exercises'].append(exercise_details)
+                    muscle_groups_covered += 1
+                    # Remove the body part from future consideration to avoid duplication
+                    body_parts.remove(body_part)
+
+                if muscle_groups_covered == muscle_groups_per_day:
+                    break  # Move to the next day once the muscle group target is met
+
+        selected_exercises.append(day_exercises)
     
-    for day in range(days):
-        day_exercises = 0  # Counter for exercises added each day
-        for body_part in body_parts:
-            exercises_for_bodypart = filtered_df[filtered_df[f'BodyPart_{body_part}'] == 1]
-            available_exercises = len(exercises_for_bodypart)
-            
-            if not exercises_for_bodypart.empty and day_exercises < exercises_per_day:
-                sample_size = min(available_exercises, exercises_per_muscle)
-                selected_exercises.append(exercises_for_bodypart.sample(n=sample_size))
-                day_exercises += sample_size
-        
-        if day_exercises < exercises_per_day:
-            print(f"Not enough exercises for day {day+1}. Found {day_exercises}, needed {exercises_per_day}.")
-
-    # Convert list of DataFrames to a single DataFrame
-    selected_exercises_df = pd.concat(selected_exercises)
-    return selected_exercises_df
-def select_exercises(filtered_df, workout_days):
-    # Placeholder for selecting exercises based on workout days
-    # Implement your logic here based on the requirements
-    return ["Exercise 1", "Exercise 2"]  # Example
-
-
+    return selected_exercises
 
 @app.route('/')
 def home():
