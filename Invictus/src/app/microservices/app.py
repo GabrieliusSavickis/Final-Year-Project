@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify
 import pandas as pd
 from pymongo import MongoClient
+from pymongo.errors import PyMongoError
+import random
 
 app = Flask(__name__)
 
@@ -24,27 +26,46 @@ def generate_workout_plan():
     # This depends on how you're planning to use `selected_exercises`
     plan_json = workout_plan.to_json(orient="records") if isinstance(workout_plan, pd.DataFrame) else workout_plan
     
-    return jsonify(workout_plan)
+    return jsonify(plan_json)
 
 def fetch_user_preferences(email):
-    client = MongoClient('mongodb+srv://invictus:invictusfyp@clusterfyp.3lmfd7v.mongodb.net/Users')
-    db = client['ClusterFYP']
-    users = db['Users']
-    user_data = users.find_one({'email': email})
-    
-    if user_data:
-        return {
-            "goal": user_data['goal'],
-            "fitnessLevel": user_data['fitnessLevel'],
-            "workoutDays": user_data['workoutDays']
-        }
-    else:
-        return None  # Handle the case where no user data is found
+    client = None
+    try:
+        client = MongoClient('mongodb+srv://invictus:invictusfyp@clusterfyp.3lmfd7v.mongodb.net')
+        db = client['Users']
+        users = db['users']
+        user_data = users.find_one({'email': email})
+        
+        if user_data:
+            return {
+                "goal": user_data['goal'],
+                "fitnessLevel": user_data['fitnessLevel'],
+                "workoutDays": user_data['workoutDays']
+            }
+        else:
+            return None  # Handle the case where no user data is found
+    except PyMongoError as e:
+        print(f"MongoDB error: {e}")
+        return None
+    finally:
+        if client:
+            client.close()
 
 def create_workout_plan(user_preferences, df):
-    # Filter by Goal
-    goal_filter = 'Type_' + user_preferences['goal'].capitalize()
-    filtered_df = df[df[goal_filter] == 1]
+    # Map the goal from MongoDB to the correct DataFrame column name
+    goal_map = {
+        "loseWeight": "Type_Cardio",
+        "gainMuscle": "Type_Strength"
+    }
+    goal_column = goal_map.get(user_preferences['goal'], None)
+
+    if goal_column is None or goal_column not in df.columns:
+        # Handle the case where the goal does not match expected values
+        print(f"Goal column {goal_column} is not recognized in the DataFrame.")
+        return []
+
+    # Proceed with filtering using the correct column name
+    filtered_df = df[df[goal_column] == 1]
     
     # Filter by Fitness Level
     fitness_level_map = {"beginner": 0, "intermediate": 1, "advanced": 2}
@@ -53,24 +74,36 @@ def create_workout_plan(user_preferences, df):
     
     # Select exercises based on workoutDays and distribute muscle groups
     # This is a simplified approach. You should adapt it to your requirements.
-    if user_preferences['workoutDays'] == 1:
-        selected_exercises = filtered_df.sample(n=6)
-    elif user_preferences['workoutDays'] == 2:
-        # Example: split by muscle group and pick 3 from each for two days
-        muscle_groups = filtered_df['MuscleGroup'].unique()[:2]  # Simplified selection
-        selected_exercises = {mg: filtered_df[filtered_df['MuscleGroup'] == mg].sample(n=3) for mg in muscle_groups}
-    elif user_preferences['workoutDays'] == 3:
-        # Adjust logic accordingly
-        muscle_groups = filtered_df['MuscleGroup'].unique()[:3]
-        selected_exercises = {mg: filtered_df[filtered_df['MuscleGroup'] == mg].sample(n=2) for mg in muscle_groups}
+    # Define your body parts based on the columns available in your DataFrame
+    body_parts = ['Abdominals', 'Abductors', 'Adductors', 'Biceps', 'Calves', 'Chest', 'Forearms', 'Glutes', 'Hamstrings', 'Lats', 'Lower Back', 'Middle Back', 'Neck', 'Quadriceps', 'Shoulders', 'Traps', 'Triceps']
     
-    return selected_exercises
+    selected_exercises = []
 
-def map_fitness_level(fitness_level):
-    # Map fitness level from string to corresponding numeric code if needed
-    levels = {"beginner": 0, "intermediate": 1, "advanced": 2}
-    return levels.get(fitness_level.lower(), 0)
+    # Assuming user_preferences['workoutDays'] is an integer 1, 2, or 3
+    exercises_per_day = 6
+    days = int(user_preferences['workoutDays'])
+    exercises_per_muscle = exercises_per_day // days
+    
+    # Shuffle the body parts to randomize which ones are chosen
+    random.shuffle(body_parts)
+    
+    for day in range(days):
+        day_exercises = 0  # Counter for exercises added each day
+        for body_part in body_parts:
+            exercises_for_bodypart = filtered_df[filtered_df[f'BodyPart_{body_part}'] == 1]
+            available_exercises = len(exercises_for_bodypart)
+            
+            if not exercises_for_bodypart.empty and day_exercises < exercises_per_day:
+                sample_size = min(available_exercises, exercises_per_muscle)
+                selected_exercises.append(exercises_for_bodypart.sample(n=sample_size))
+                day_exercises += sample_size
+        
+        if day_exercises < exercises_per_day:
+            print(f"Not enough exercises for day {day+1}. Found {day_exercises}, needed {exercises_per_day}.")
 
+    # Convert list of DataFrames to a single DataFrame
+    selected_exercises_df = pd.concat(selected_exercises)
+    return selected_exercises_df
 def select_exercises(filtered_df, workout_days):
     # Placeholder for selecting exercises based on workout days
     # Implement your logic here based on the requirements
