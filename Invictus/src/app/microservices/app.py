@@ -26,7 +26,9 @@ def generate_workout_plan():
     cleaned_workout_plan = clean_up_exercises(workout_plan_df)
     
     # Save the cleaned workout plan to MongoDB
-    save_workout_plan_to_mongodb(cleaned_workout_plan, data['email'])
+    user_goal = user_preferences['goal']
+    user_level = user_preferences['fitnessLevel']
+    save_workout_plan_to_mongodb(cleaned_workout_plan, data['email'], user_goal, user_level)
     
     # Convert cleaned exercises to JSON for the response
     plan_json = jsonify(cleaned_workout_plan)
@@ -56,7 +58,7 @@ def clean_up_exercises(workout_plan):
     
     return cleaned_workout_plan
 
-def save_workout_plan_to_mongodb(cleaned_workout_plan, user_email):
+def save_workout_plan_to_mongodb(cleaned_workout_plan, user_email, user_goal, user_level):
     client = MongoClient('mongodb+srv://invictus:invictusfyp@clusterfyp.3lmfd7v.mongodb.net')
     db = client['Users']
     workout_plans = db['workout_plans']
@@ -64,7 +66,12 @@ def save_workout_plan_to_mongodb(cleaned_workout_plan, user_email):
     # Replace 'user_email' with the field name you are using to reference the user
     workout_plans.update_one(
         {'email': user_email},
-        {'$set': {'workouts': cleaned_workout_plan}},
+        {'$set': {
+            'email': user_email,
+            'goal': user_goal,  # Save user's goal
+            'level': user_level,  # Save user's level
+            'workouts': cleaned_workout_plan
+        }},
         upsert=True
     )
     client.close()
@@ -121,6 +128,7 @@ def create_workout_plan(user_preferences, df):
     for day in range(1, days + 1):
         day_exercises = {'Day': day, 'Exercises': []}
         muscle_groups_covered = 0
+        
         # It's important to shuffle body parts inside the loop to reset the selection for each day
         random.shuffle(body_parts)  
 
