@@ -36,6 +36,29 @@ const userSchema = mongoose.Schema({
   timestamps: true,
 });
 
+// Schema for individual exercises, adjust according to your actual data model
+const exerciseSchema = new mongoose.Schema({
+  Title: String,
+  Equipment: String,
+  BodyParts: [String]
+});
+
+// Schema for daily workout plans
+const dayPlanSchema = new mongoose.Schema({
+  Day: Number,
+  Exercises: [exerciseSchema]
+});
+
+// Main schema for the workout plan
+const workoutPlanSchema = new mongoose.Schema({
+  email: String, // Assuming there's an email field to link to the user
+  workouts: [dayPlanSchema],
+  goal: String,
+  fitnessLevel: String
+});
+
+
+const WorkoutPlan = mongoose.model('WorkoutPlan', workoutPlanSchema);
 const User = mongoose.model('User', userSchema);
 
 //app post
@@ -60,11 +83,30 @@ app.post('/tabs/trainer', async (req, res) => {
 
 // Get user data
 app.get('/tabs/profile/:email', async (req, res) => {
+  // Example of using aggregation to join collections (simplified)
   try {
-    const user = await User.findOne({ email: req.params.email });
-    res.send(user);
+    const result = await User.aggregate([
+      { $match: { email: req.params.email.toLowerCase() } },
+      {
+        $lookup: {
+          from: "workout_plans",
+          localField: "email",
+          foreignField: "email",
+          as: "workoutPlan"
+        }
+      },
+      { $unwind: "$workoutPlan" }, // If you're sure there's only one workout plan per user
+    ]);
+
+    if (result && result.length) {
+      console.log('Aggregation result:', result[0]);
+      res.send(result[0]);
+    } else {
+      res.status(404).send('User or workout plan not found');
+    }
   } catch (error) {
-    res.status(500).send('Error retrieving user data');
+    console.error('Aggregation error:', error);
+    res.status(500).send('Error retrieving user and workout plan data');
   }
 });
 

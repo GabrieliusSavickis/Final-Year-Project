@@ -15,13 +15,13 @@
         <ion-row>
           <ion-col size="auto">
             <ion-avatar class="profile-picture">
-              <img [src]="userProfile.picture" alt="Profile Picture">
+              <img [src]="userProfile?.picture" alt="Profile Picture">
             </ion-avatar>
           </ion-col>
           <ion-col>
             <ion-card-content>
-              <h2>{{ userProfile.name }}</h2>
-              <p>Email: {{ userProfile.email }}</p>
+              <h2>{{ userProfile?.name }}</h2>
+              <p>Email: {{ userProfile?.email }}</p>
               <!-- Editable fields for phone, age, and gender -->
               <ion-item>
                 <ion-label position="floating">Phone Number</ion-label>
@@ -52,23 +52,32 @@
     </ion-card>
 
 
-    <ion-card class="workout-plan">
+    <ion-card *ngIf="workoutPlan && workoutPlan.length > 0" class="workout-plan">
       <ion-card-header>
         <ion-card-title>Workout Plan</ion-card-title>
       </ion-card-header>
       <ion-card-content>
         <ion-list lines="none">
-          <div *ngFor="let day of workoutPlan">
-            <ion-item-group>
-              <ion-item-divider>
-                <ion-label>{{ day.day }}</ion-label>
-              </ion-item-divider>
-              <ion-item *ngFor="let exercise of day.exercises">
-                <ion-label>{{ exercise }}</ion-label>
+          <div *ngFor="let dayPlan of workoutPlan; let dayIndex = index">
+            <ion-item-divider>
+              <ion-label>Day {{ dayPlan.Day }}: {{ goal }} - {{ level }}</ion-label>
+            </ion-item-divider>
+            <div *ngFor="let exercise of dayPlan.Exercises">
+              <ion-item>
+                <ion-label>
+                  <h2>{{ exercise.Title }}</h2>
+                  <p>Equipment: {{ exercise.Equipment }}</p>
+                  <p>Targets: {{ exercise.BodyParts.join(', ') }}</p>
+                </ion-label>
               </ion-item>
-            </ion-item-group>
+            </div>
           </div>
         </ion-list>
+      </ion-card-content>
+    </ion-card>
+    <ion-card *ngIf="!workoutPlan || workoutPlan.length === 0" class="no-workout-plan">
+      <ion-card-content>
+        No workout plan available yet.
       </ion-card-content>
     </ion-card>
 

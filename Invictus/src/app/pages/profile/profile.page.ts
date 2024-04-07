@@ -14,6 +14,9 @@ export class ProfilePageComponent implements OnInit {
   phone: string;
   age: number;
   gender: string;
+  workoutPlan: any[] = []; // Adjust based on your actual data structure
+  goal: string = ''; // Added this
+  level: string = ''; // Added this
 
   constructor(private userService: UserService, public auth: AuthService, private httpClient: HttpClient) {
     this.phone = '';
@@ -21,25 +24,36 @@ export class ProfilePageComponent implements OnInit {
     this.gender = '';
   }
 
-  logout() {
-    this.auth.logout({ returnTo: `${window.location.origin}/login` } as LogoutOptions);
-  }
-
   ngOnInit() {
     this.userService.userProfile$.subscribe(profile => {
-      this.userProfile = profile;
-
-      // Fetch additional profile info from MongoDB using the email
-    this.fetchProfileData(this.userProfile.email);
+      console.log('Profile received:', profile);
+      if (profile) {
+        this.userProfile = profile;
+        // Fetch additional profile info from MongoDB using the email
+        this.fetchProfileData(this.userProfile.email);
+      } else {
+        // Handle case where profile is not available
+        console.error('User profile is not available');
+      }
     });
   }
 
   fetchProfileData(email: string) {
-    this.httpClient.get(`http://localhost:3000/tabs/profile/${email}`).subscribe((data: any) => {
-      this.phone = data.phone;
-      this.age = data.age;
-      this.gender = data.gender;
-      // Handle other properties if necessary
+    this.httpClient.get(`http://localhost:3000/tabs/profile/${email}`).subscribe({
+      next: (data: any) => {
+        console.log('Received data:', data);
+        this.phone = data.phone;
+        this.age = data.age;
+        this.gender = data.gender;
+        if (data.workoutPlan) {
+          this.workoutPlan = data.workoutPlan.workouts; // Assuming the structure based on your MongoDB document
+          this.goal = data.workoutPlan.goal; // Assign goal
+          this.level = data.workoutPlan.level; // Assign level
+        }
+      },
+      error: (error) => {
+        console.error('Error fetching profile data:', error);
+      }
     });
   }
 
@@ -60,21 +74,9 @@ export class ProfilePageComponent implements OnInit {
     });
 }
 
-workoutPlan = [
-  {
-    day: 'Day 1: Chest, Shoulders & Triceps',
-    exercises: ['Exercise 1', 'Exercise 2', 'Exercise 3']
-  },
-  {
-    day: 'Day 2: Back & Biceps',
-    exercises: ['Exercise 1', 'Exercise 2', 'Exercise 3']
-  },
-  {
-    day: 'Day 3: Legs & Abs',
-    exercises: ['Exercise 1', 'Exercise 2', 'Exercise 3']
-  }
-  // Add more days as needed
-];
+logout() {
+  this.auth.logout({ returnTo: `${window.location.origin}/login` } as LogoutOptions);
+}
 
  // Properties for the chart
  public pieChartOptions: ChartOptions = {
