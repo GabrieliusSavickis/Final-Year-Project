@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService, LogoutOptions } from '@auth0/auth0-angular';
 import { Router } from '@angular/router';
 import * as moment from 'moment';
+import { WorkoutService } from '../../services/workout.service';
 
 @Component({
   selector: 'app-home',
@@ -20,11 +21,24 @@ export class HomePage {
   workoutDurationInSeconds = 0;
   displayTime = '00:00:00';
 
-  constructor(public auth: AuthService, private router: Router) {
+  todaysWorkout$ = this.workoutService.todaysWorkout$;
+  currentDayIndex$ = this.workoutService.currentDayIndex$;
+
+  constructor(public auth: AuthService, private router: Router, private workoutService: WorkoutService) {
   }
 
-  logout() {
-    this.auth.logout({ returnTo: `${window.location.origin}/login` } as LogoutOptions);
+  ngOnInit() {
+  this.workoutService.getCurrentDayIndex().then(index => {
+    if (index !== null) {
+      this.workoutService.currentDayIndex.next(index); // Correctly update the BehaviorSubject
+      this.workoutService.fetchWorkoutPlan('gabrrielius@gmail.com'); // Use actual email
+    }
+  });
+}
+
+  toggleExerciseCompletion(exerciseIndex: number) {
+    // Call service method to toggle completion
+    this.workoutService.toggleExerciseCompletion(this.workoutService.currentDayIndex.value, exerciseIndex);
   }
 
   toggleWorkout() {
@@ -86,6 +100,11 @@ export class HomePage {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     return `${hours}h ${minutes}m`;
+  }
+
+  
+  logout() {
+    this.auth.logout({ returnTo: `${window.location.origin}/login` } as LogoutOptions);
   }
   
 }

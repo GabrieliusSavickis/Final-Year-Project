@@ -49,6 +49,22 @@
   </ion-card>
 </div>
 
+<div *ngIf="todaysWorkout$ | async as todaysWorkout">
+  <ion-card class="workout-card">
+    <ion-card-header>
+      Day {{ currentDayIndex$ | async }} Workout
+    </ion-card-header>
+    <ion-card-content>
+      <ul>
+        <li *ngFor="let exercise of todaysWorkout.Exercises; let i = index" (click)="toggleExerciseCompletion(i)">
+          {{ exercise.Title }} - {{ exercise.Sets }} sets of {{ exercise.Repetitions }} reps
+          <ion-icon name="checkmark-done" *ngIf="exercise.isCompleted"></ion-icon>
+        </li>
+      </ul>
+    </ion-card-content>
+  </ion-card>
+</div>
+
  <!-- Overall Workout Time Section -->
  <div class="overall-workout-time">
   <h2>Overall Workout Time This Week</h2>

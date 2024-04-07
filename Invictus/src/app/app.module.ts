@@ -5,6 +5,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { AuthModule, User } from '@auth0/auth0-angular';
+import { IonicStorageModule } from '@ionic/storage-angular';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
@@ -22,6 +23,7 @@ import { NgChartsModule  } from 'ng2-charts';
       redirect_uri: window.location.origin
     }
   }),
+  IonicStorageModule.forRoot()
 ],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
   bootstrap: [AppComponent],
