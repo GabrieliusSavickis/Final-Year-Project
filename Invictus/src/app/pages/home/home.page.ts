@@ -3,6 +3,7 @@ import { AuthService, LogoutOptions } from '@auth0/auth0-angular';
 import { Router } from '@angular/router';
 import * as moment from 'moment';
 import { WorkoutService } from '../../services/workout.service';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-home',
@@ -24,12 +25,35 @@ export class HomePage {
   todaysWorkout$ = this.workoutService.todaysWorkout$;
   currentDayIndex$ = this.workoutService.currentDayIndex$;
 
-  constructor(public auth: AuthService, private router: Router, private workoutService: WorkoutService) {
+  constructor(public auth: AuthService, 
+    private router: Router, 
+    private workoutService: WorkoutService,
+    private changeDetectorRef: ChangeDetectorRef) {
   }
 
   ngOnInit() {
-    this.workoutService.loadInitialState();
-    
+    this.workoutService.todaysWorkout$.subscribe(
+      (workout) => {
+        if (workout === undefined) {
+          // The workout is still loading...
+          console.log('Workout is still loading...');
+          // Appropriate UI feedback can be managed here or in the template with `*ngIf`
+        } else if (workout === null) {
+          // There is no workout for today or there was an error fetching the workout plan
+          console.log('No workout for today or error in fetching workout plan.');
+          // Show an error or empty state in the UI
+        } else {
+          // There is a valid workout for today
+          console.log('There is a valid workout for today:', workout);
+          // The workout data will be displayed by the `async` pipe in the template
+        }
+      },
+      (error) => {
+        // If there is an error in fetching the workout, log it here
+        console.error('Error fetching workout plan:', error);
+        // Update the UI to show an error message to the user if needed
+      }
+    );
   }
 
   toggleExerciseCompletion(exerciseIndex: number) {

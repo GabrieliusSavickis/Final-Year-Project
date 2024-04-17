@@ -43,7 +43,7 @@
           <ion-card-content>
             <ul>
               <li *ngFor="let exercise of todaysWorkout.Exercises; let i = index" (click)="toggleExerciseCompletion(i)">
-                {{ exercise.Title }} - {{ exercise.Sets }} sets of {{ exercise.Repetitions }} reps
+                {{ exercise.Title }} 
                 <ion-icon name="checkmark-circle" *ngIf="exercise.isCompleted"></ion-icon>
               </li>
             </ul>

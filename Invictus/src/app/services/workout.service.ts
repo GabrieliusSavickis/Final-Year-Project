@@ -9,7 +9,7 @@ import { Storage } from '@ionic/storage-angular';
 export class WorkoutService {
   private currentDayIndex = new BehaviorSubject<number>(0);
   public currentDayIndex$ = this.currentDayIndex.asObservable();
-  private todaysWorkout = new BehaviorSubject<any>(null);
+  private todaysWorkout = new BehaviorSubject<any>(undefined);
   public todaysWorkout$ = this.todaysWorkout.asObservable();
   private _storage: Storage | null = null;
 
@@ -47,17 +47,13 @@ export class WorkoutService {
     this.httpClient.get(`http://localhost:3000/tabs/profile/${email}`).subscribe({
       next: (response: any) => {
         console.log('Workout plan fetched successfully:', response);
-        const workoutPlan = response.workoutPlan ? response.workoutPlan.workouts : [];
-        if (workoutPlan.length === 0) {
-          console.error('No workouts found for today');
-          this.todaysWorkout.next(null);  // Update to no workout state
-        } else {
-          this.updateWorkoutPlan(workoutPlan);
-        }
+        // Assume response is in the correct structure
+        this.updateWorkoutPlan(response.workouts || []);
       },
       error: (error) => {
         console.error('Error fetching workout plan:', error);
-        this.todaysWorkout.error(new Error('Error fetching workout plan'));  // Properly push an error state
+        // Instead of throwing an error, we can set todaysWorkout to `null` or a specific error state
+        this.todaysWorkout.next(null); 
       }
     });
   }
@@ -65,12 +61,26 @@ export class WorkoutService {
 
   updateWorkoutPlan(workoutPlan: any[]) {
     console.log('Updated workout plan:', workoutPlan);
-    this.selectTodaysWorkout(workoutPlan, this.currentDayIndex.value);
+    // Check if there's an actual plan for the current day, handle if there's none
+    if (workoutPlan.length > 0) {
+      this.selectTodaysWorkout(workoutPlan, this.currentDayIndex.value);
+    } else {
+      // Handle case where there is no workout for today
+      this.todaysWorkout.next(null);
+    }
   }
+  
 
   selectTodaysWorkout(workoutPlan: any[], index: number) {
-    const todayIndex = index % workoutPlan.length;
-    this.todaysWorkout.next(workoutPlan[todayIndex]);
+    // Ensure we're not trying to access an index that doesn't exist
+    if (index < workoutPlan.length) {
+      const todaysWorkout = workoutPlan[index];
+      this.todaysWorkout.next(todaysWorkout);
+    } else {
+      // If we are, reset the current day index and try again
+      this.setCurrentDayIndex(0);
+      this.selectTodaysWorkout(workoutPlan, 0);
+    }
   }
 
   incrementDay() {
