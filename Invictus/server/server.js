@@ -51,11 +51,12 @@ const dayPlanSchema = new mongoose.Schema({
 
 // Main schema for the workout plan
 const workoutPlanSchema = new mongoose.Schema({
-  email: String, // Assuming there's an email field to link to the user
+  email: String,
   workouts: [dayPlanSchema],
   goal: String,
   fitnessLevel: String
-});
+}, { collection: 'workout_plans' });  // Explicitly specifying the collection name
+
 
 
 const WorkoutPlan = mongoose.model('WorkoutPlan', workoutPlanSchema);
@@ -138,3 +139,6 @@ app.post('/tabs/profile/update', async (req, res) => {
     res.status(500).send('Error updating or creating user data');
   }
 });
+
+
+

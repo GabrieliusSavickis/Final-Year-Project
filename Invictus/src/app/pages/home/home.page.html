@@ -32,38 +32,35 @@
   </button>
 </div>
 
-<!-- Sample Workout Section -->
-<div class="sample-workout" *ngIf="sampleWorkout">
- 
-  <ion-card class="workout-card">
-    <ion-card-header>
-      {{ sampleWorkout.name }}
-    </ion-card-header>
-    <ion-card-content>
-      <ul>
-        <li *ngFor="let exercise of sampleWorkout.exercises">
-          {{ exercise.name }} - {{ exercise.sets }} sets of {{ exercise.repetitions }} reps
-        </li>
-      </ul>
-    </ion-card-content>
-  </ion-card>
-</div>
-
-<div *ngIf="todaysWorkout$ | async as todaysWorkout">
-  <ion-card class="workout-card">
-    <ion-card-header>
-      Day {{ currentDayIndex$ | async }} Workout
-    </ion-card-header>
-    <ion-card-content>
-      <ul>
-        <li *ngFor="let exercise of todaysWorkout.Exercises; let i = index" (click)="toggleExerciseCompletion(i)">
-          {{ exercise.Title }} - {{ exercise.Sets }} sets of {{ exercise.Repetitions }} reps
-          <ion-icon name="checkmark-done" *ngIf="exercise.isCompleted"></ion-icon>
-        </li>
-      </ul>
-    </ion-card-content>
-  </ion-card>
-</div>
+<ion-content>
+  <ng-container *ngIf="todaysWorkout$ | async as todaysWorkout; else loadingTemplate">
+    <div *ngIf="todaysWorkout; else errorTemplate">
+      <div class="workout-container">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Day {{ currentDayIndex$ | async }} Workout</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ul>
+              <li *ngFor="let exercise of todaysWorkout.Exercises; let i = index" (click)="toggleExerciseCompletion(i)">
+                {{ exercise.Title }} - {{ exercise.Sets }} sets of {{ exercise.Repetitions }} reps
+                <ion-icon name="checkmark-circle" *ngIf="exercise.isCompleted"></ion-icon>
+              </li>
+            </ul>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </div>
+  </ng-container>
+  <ng-template #loadingTemplate>
+    <p>Loading workout plan...</p>
+  </ng-template>
+  <ng-template #errorTemplate>
+    <div class="error-message">
+      <p>Error fetching workout plan. Please try again later.</p>
+    </div>
+  </ng-template>
+</ion-content>
 
  <!-- Overall Workout Time Section -->
  <div class="overall-workout-time">

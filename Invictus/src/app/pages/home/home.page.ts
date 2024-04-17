@@ -28,17 +28,12 @@ export class HomePage {
   }
 
   ngOnInit() {
-  this.workoutService.getCurrentDayIndex().then(index => {
-    if (index !== null) {
-      this.workoutService.currentDayIndex.next(index); // Correctly update the BehaviorSubject
-      this.workoutService.fetchWorkoutPlan('gabrrielius@gmail.com'); // Use actual email
-    }
-  });
-}
+    this.workoutService.loadInitialState();
+    
+  }
 
   toggleExerciseCompletion(exerciseIndex: number) {
-    // Call service method to toggle completion
-    this.workoutService.toggleExerciseCompletion(this.workoutService.currentDayIndex.value, exerciseIndex);
+    this.workoutService.toggleExerciseCompletion(exerciseIndex);
   }
 
   toggleWorkout() {
@@ -78,20 +73,6 @@ export class HomePage {
   pad(num: number) {
     return num.toString().padStart(2, '0');
   }
-
-   // Sample workout data
-   sampleWorkout = {
-    name: 'Friday Workout',
-    exercises: [
-      { name: 'Bench Press', sets: 4, repetitions: 10 },
-      { name: 'Shoulder Press', sets: 4, repetitions: 12 },
-      { name: 'Tricep Extension', sets: 4, repetitions: 10 },
-      { name: 'Incline Bench Press', sets: 4, repetitions: 8 },
-      { name: 'Lateral Raise', sets: 3, repetitions: 10 },
-      { name: 'Triceps Rop Pushdown', sets: 3, repetitions: 10 },
-      // Add more exercises here
-    ],
-  };
 
   // Placeholder for overall workout time (in seconds)
   overallWorkoutTime = 3600; // 1 hour as an example
