@@ -63,7 +63,7 @@ def save_workout_plan_to_mongodb(cleaned_workout_plan, user_email, user_goal, us
     db = client['Users']
     workout_plans = db['workout_plans']
     
-    # Replace 'user_email' with the field name you are using to reference the user
+    
     workout_plans.update_one(
         {'email': user_email},
         {'$set': {
