@@ -9,7 +9,7 @@ import { Storage } from '@ionic/storage-angular';
 export class WorkoutService {
   private currentDayIndex = new BehaviorSubject<number>(0);
   public currentDayIndex$ = this.currentDayIndex.asObservable();
-  private todaysWorkout = new BehaviorSubject<any>(undefined);
+  private todaysWorkout = new BehaviorSubject<any | null>(null);
   public todaysWorkout$ = this.todaysWorkout.asObservable();
   private _storage: Storage | null = null;
 
@@ -25,12 +25,8 @@ export class WorkoutService {
 
   async loadInitialState() {
     const index = await this.getCurrentDayIndex();
-    if (index !== null) {
-      this.currentDayIndex.next(index);
-    } else {
-      this.setCurrentDayIndex(0);  // Default to start at Day 1
-    }
-    this.fetchWorkoutPlan('gabrrielius@gmail.com');  // Assuming this fetches and updates the plan
+    this.currentDayIndex.next(index ?? 0); // Fallback to 0 if index is null
+    this.fetchWorkoutPlan('gabrrielius@gmail.com');  // Ensure to handle no workout case
   }
 
   async setCurrentDayIndex(index: number) {
@@ -47,27 +43,25 @@ export class WorkoutService {
     this.httpClient.get(`http://localhost:3000/tabs/profile/${email}`).subscribe({
       next: (response: any) => {
         console.log('Workout plan fetched successfully:', response);
-        // Assume response is in the correct structure
-        this.updateWorkoutPlan(response.workouts || []);
+        const workouts = response.workoutPlan ? response.workoutPlan.workouts : [];
+        this.updateWorkoutPlan(workouts);
       },
       error: (error) => {
         console.error('Error fetching workout plan:', error);
-        // Instead of throwing an error, we can set todaysWorkout to `null` or a specific error state
-        this.todaysWorkout.next(null); 
+        this.todaysWorkout.next(null);
       }
     });
   }
   
 
   updateWorkoutPlan(workoutPlan: any[]) {
-    console.log('Updated workout plan:', workoutPlan);
-    // Check if there's an actual plan for the current day, handle if there's none
-    if (workoutPlan.length > 0) {
-      this.selectTodaysWorkout(workoutPlan, this.currentDayIndex.value);
-    } else {
-      // Handle case where there is no workout for today
+    if (!workoutPlan || workoutPlan.length === 0) {
+      console.error('No workouts found in the plan');
       this.todaysWorkout.next(null);
+      return;
     }
+    console.log('Updated workout plan:', workoutPlan);
+    this.selectTodaysWorkout(workoutPlan, this.currentDayIndex.value);
   }
   
 
@@ -99,8 +93,9 @@ export class WorkoutService {
 
   checkCompletion(workout: any) {
     if (workout.Exercises.every((ex: any) => ex.isCompleted)) {
-      console.log('Congratulations, you have finished today\'s workout!');
-      this.incrementDay();  // Consider what to do if the plan completes
+        console.log('Congratulations, you have finished today\'s workout!');
+        this.incrementDay();  // Move to the next day
+        this.todaysWorkout.next({ ...workout, completed: true });  // Mark as completed
     }
-  }
+}
 }

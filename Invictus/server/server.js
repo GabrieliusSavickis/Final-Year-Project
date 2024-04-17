@@ -84,10 +84,10 @@ app.post('/tabs/trainer', async (req, res) => {
 
 // Get user data
 app.get('/tabs/profile/:email', async (req, res) => {
-  // Example of using aggregation to join collections (simplified)
   try {
+    const email = req.params.email.toLowerCase();
     const result = await User.aggregate([
-      { $match: { email: req.params.email.toLowerCase() } },
+      { $match: { email } },
       {
         $lookup: {
           from: "workout_plans",
@@ -96,18 +96,17 @@ app.get('/tabs/profile/:email', async (req, res) => {
           as: "workoutPlan"
         }
       },
-      { $unwind: "$workoutPlan" }, // If you're sure there's only one workout plan per user
+      { $unwind: { path: "$workoutPlan", preserveNullAndEmptyArrays: true } } // preserves users without workout plans
     ]);
 
-    if (result && result.length) {
-      console.log('Aggregation result:', result[0]);
-      res.send(result[0]);
+    if (result.length > 0) {
+      res.json(result[0]);
     } else {
-      res.status(404).send('User or workout plan not found');
+      res.status(404).json({ message: 'User not found' });
     }
   } catch (error) {
     console.error('Aggregation error:', error);
-    res.status(500).send('Error retrieving user and workout plan data');
+    res.status(500).json({ message: 'Error retrieving user and workout plan data' });
   }
 });
 

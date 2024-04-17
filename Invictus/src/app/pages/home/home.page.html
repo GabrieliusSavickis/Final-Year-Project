@@ -34,16 +34,16 @@
 
 <ion-content>
   <ng-container *ngIf="todaysWorkout$ | async as todaysWorkout; else loadingTemplate">
-    <div *ngIf="todaysWorkout; else errorTemplate">
+    <div *ngIf="todaysWorkout && !todaysWorkout.completed; else workoutCompleteTemplate">
       <div class="workout-container">
         <ion-card>
           <ion-card-header>
-            <ion-card-title>Day {{ currentDayIndex$ | async }} Workout</ion-card-title>
+            <ion-card-title>Day {{ ((currentDayIndex$ | async)?.valueOf() ?? 0) + 1 }} Workout</ion-card-title>
           </ion-card-header>
           <ion-card-content>
             <ul>
               <li *ngFor="let exercise of todaysWorkout.Exercises; let i = index" (click)="toggleExerciseCompletion(i)">
-                {{ exercise.Title }} 
+                {{ exercise.Title }} - {{ exercise.Equipment }}
                 <ion-icon name="checkmark-circle" *ngIf="exercise.isCompleted"></ion-icon>
               </li>
             </ul>
@@ -51,13 +51,24 @@
         </ion-card>
       </div>
     </div>
+    <ng-template #workoutCompleteTemplate>
+      <div class="workout-container">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Congratulations! You've completed today's workout.</ion-card-title>
+          </ion-card-header>
+        </ion-card>
+      </div>
+    </ng-template>
   </ng-container>
+
   <ng-template #loadingTemplate>
     <p>Loading workout plan...</p>
   </ng-template>
-  <ng-template #errorTemplate>
+
+  <ng-template #noWorkoutTemplate>
     <div class="error-message">
-      <p>Error fetching workout plan. Please try again later.</p>
+      <p>No workout for today or error fetching workout plan. Please try again later.</p>
     </div>
   </ng-template>
 </ion-content>
