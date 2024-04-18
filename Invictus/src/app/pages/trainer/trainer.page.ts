@@ -75,6 +75,28 @@ export class TrainerPage implements OnInit{
     });
   }
 
+  createWorkoutPlan() {
+    if (!this.userEmail) {
+      console.error('User email not available');
+      return;
+    }
+  
+    const data = {
+      email: this.userEmail,
+    };
+  
+    this.httpClient.post('http://localhost:5000/api/workout-plans', data).subscribe({
+      next: (response) => {
+        console.log('Workout plan created:', response);
+        alert('Workout plan created successfully!');
+      },
+      error: (error) => {
+        console.error('Error creating workout plan:', error);
+        alert('Failed to create workout plan. Please try again.');
+      }
+    });
+  }
+
   ngOnInit() {
     this.userService.userProfile$.subscribe(profile => {
       if (profile && profile.email) {

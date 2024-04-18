@@ -3,8 +3,10 @@ import pandas as pd
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 import random
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 # Load your dataset
 df = pd.read_csv('../../assets/Gym_Dataset.csv')
@@ -12,28 +14,20 @@ df = pd.read_csv('../../assets/Gym_Dataset.csv')
 @app.route('/api/workout-plans', methods=['POST'])
 def generate_workout_plan():
     data = request.get_json()
+    email = data.get('email')
     
-    # Assuming data includes 'email', which you can use to query MongoDB for user preferences
-    user_preferences = fetch_user_preferences(data['email'])
-
+    if not email:
+        return jsonify({"error": "Email is required"}), 400
+    
+    user_preferences = fetch_user_preferences(email)
     if not user_preferences:
         return jsonify({"error": "User preferences not found"}), 404
     
-    # Generate the workout plan DataFrame
-    workout_plan_df = create_workout_plan(user_preferences, df)  # Make sure to use this variable name
-
-    # Clean the workout_plan DataFrame before converting to JSON
+    workout_plan_df = create_workout_plan(user_preferences, df)
     cleaned_workout_plan = clean_up_exercises(workout_plan_df)
+    save_workout_plan_to_mongodb(cleaned_workout_plan, email, user_preferences['goal'], user_preferences['fitnessLevel'])
     
-    # Save the cleaned workout plan to MongoDB
-    user_goal = user_preferences['goal']
-    user_level = user_preferences['fitnessLevel']
-    save_workout_plan_to_mongodb(cleaned_workout_plan, data['email'], user_goal, user_level)
-    
-    # Convert cleaned exercises to JSON for the response
-    plan_json = jsonify(cleaned_workout_plan)
-
-    return plan_json
+    return jsonify(cleaned_workout_plan)
 
 def clean_up_exercises(workout_plan):
     cleaned_workout_plan = []
@@ -100,65 +94,85 @@ def fetch_user_preferences(email):
             client.close()
 
 def create_workout_plan(user_preferences, df):
-    # Maps user goal to dataset columns
-    goal_map = {
-        "loseWeight": "Type_Cardio",
-        "gainMuscle": "Type_Strength"
-    }
-    goal_column = goal_map.get(user_preferences['goal'], "Type_Cardio")
-
-    # Filter by goal and fitness level
-    fitness_level_map = {"beginner": 0, "intermediate": 1, "advanced": 2}
-    fitness_level = fitness_level_map.get(user_preferences['fitnessLevel'], 0)  # Adjusted to match CSV indexing starting at 0
-    filtered_df = df[(df[goal_column] == 1) & (df['Level'] == fitness_level)]  # Ensure equality comparison for Level
-
-    # Identify muscle groups from the dataset
-    muscle_groups = [col for col in df.columns if 'BodyPart_' in col]
-    body_parts = [mg.split('_')[1] for mg in muscle_groups if filtered_df[mg].any()]
-    
+    goal = user_preferences['goal']
+    fitness_level = user_preferences['fitnessLevel']
     days = int(user_preferences['workoutDays'])
-    muscle_groups_per_day = {
-        1: 6,  # For 1 workout day
-        2: 3,  # For 2 workout days
-        3: 2   # For 3 workout days
-    }[days]
+
+    if goal == "loseWeight":
+        return create_cardio_plan(df, days)
+    else:
+        return create_strength_plan(df, goal, fitness_level, days)
+
+def create_cardio_plan(df, days):
+    cardio_df = df[df['Type_Cardio'] == 1]  # Filter for cardio exercises
+
+    total_exercises = len(cardio_df)
+    exercises_per_day = max(6 // days, 1)  # Ensure at least one exercise if days > 6
 
     selected_exercises = []
-    
+    used_indices = set()
+
     for day in range(1, days + 1):
         day_exercises = {'Day': day, 'Exercises': []}
-        muscle_groups_covered = 0
-        
-        # It's important to shuffle body parts inside the loop to reset the selection for each day
-        random.shuffle(body_parts)  
 
-        for body_part in body_parts[:]:  # Iterate on a copy of body_parts to safely modify the original list
-            if muscle_groups_covered < muscle_groups_per_day:
-                exercises_for_body_part = filtered_df[filtered_df[f'BodyPart_{body_part}'] == 1]
+        for _ in range(exercises_per_day):
+            while True:
+                idx = random.randint(0, total_exercises - 1)
+                if idx not in used_indices:
+                    used_indices.add(idx)
+                    break
 
-                if not exercises_for_body_part.empty:
-                    # Always select 3 exercises per muscle group
-                    required_exercises = 3
-                    selected = exercises_for_body_part.sample(n=min(len(exercises_for_body_part), required_exercises)).to_dict('records')
-                    for exercise in selected:
-                        # Extract body parts for the current exercise
-                        body_parts_involved = [body_part.split('_')[1] for body_part in muscle_groups if exercise[body_part] == 1]
-                        exercise_details = {
-                            "Title": exercise['Title'],
-                            "Equipment": exercise['Equipment'],
-                            "BodyParts": body_parts_involved  # Add the list of body parts involved in this exercise
-                        }
-                        # Use exercise_details instead of 'selected' directly
-                        day_exercises['Exercises'].append(exercise_details)
-                    muscle_groups_covered += 1
-                    # Remove the body part from future consideration to avoid duplication
-                    body_parts.remove(body_part)
-
-                if muscle_groups_covered == muscle_groups_per_day:
-                    break  # Move to the next day once the muscle group target is met
+            exercise = cardio_df.iloc[idx]
+            body_parts = exercise.get('BodyParts', '').split(',') if 'BodyParts' in exercise else []
+            exercise_details = {
+                "Title": exercise['Title'],
+                "Equipment": exercise['Equipment'],
+                "BodyParts": [part.strip() for part in body_parts]
+            }
+            day_exercises['Exercises'].append(exercise_details)
 
         selected_exercises.append(day_exercises)
-    
+
+    return selected_exercises
+
+def create_strength_plan(df, goal, fitness_level, days):
+    goal_map = {
+        "gainMuscle": "Type_Strength"
+    }
+    goal_column = goal_map.get(goal, "Type_Strength")
+    fitness_level_map = {"beginner": 0, "intermediate": 1, "advanced": 2}
+    level_index = fitness_level_map.get(fitness_level, 0)
+
+    filtered_df = df[(df[goal_column] == 1) & (df['Level'] == level_index)]
+    muscle_groups = [col for col in df.columns if 'BodyPart_' in col]
+    body_parts = [mg.split('_')[1] for mg in muscle_groups if filtered_df[mg].any()]
+
+    muscle_groups_per_day = {
+        1: 6,  # For 1 workout day per week
+        2: 3,  # For 2 workout days per week
+        3: 2   # For 3 workout days per week
+    }.get(days, 2)  # Default to 2 groups per day if not 1, 2, or 3 days
+
+    selected_exercises = []
+
+    for day in range(1, days + 1):
+        day_exercises = {'Day': day, 'Exercises': []}
+        random.shuffle(body_parts)  # Shuffle body parts for variety
+
+        for body_part in body_parts:
+            if len(day_exercises['Exercises']) < muscle_groups_per_day:
+                exercises_for_body_part = filtered_df[filtered_df[f'BodyPart_{body_part}'] == 1]
+                selected = exercises_for_body_part.sample(n=3 if len(exercises_for_body_part) >= 3 else len(exercises_for_body_part)).to_dict('records')
+                for exercise in selected:
+                    exercise_details = {
+                        "Title": exercise['Title'],
+                        "Equipment": exercise['Equipment'],
+                        "BodyParts": [bp.strip() for bp in exercise['BodyParts'].split(',')]
+                    }
+                    day_exercises['Exercises'].append(exercise_details)
+
+        selected_exercises.append(day_exercises)
+
     return selected_exercises
 
 @app.route('/')
