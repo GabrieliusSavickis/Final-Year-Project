@@ -17,4 +17,9 @@ export class UserService {
       tap(user => this.userProfileSubject.next(user))
     ).subscribe();
   }
+
+  // Get the user's email
+  getEmail(): string {
+    return this.userProfileSubject.value?.email ?? '';
+  }
 }

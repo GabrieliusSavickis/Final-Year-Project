@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject } from 'rxjs';
 import { Storage } from '@ionic/storage-angular';
+import { UserService } from './user.service';
 
 interface WorkoutPlanResponse {
   workoutPlan?: {
@@ -25,57 +26,67 @@ export class WorkoutService {
   private todaysWorkout = new BehaviorSubject<any | null>(null);
   public todaysWorkout$ = this.todaysWorkout.asObservable();
   private _storage: Storage | null = null;
+  private userEmail: string = '';
 
-  constructor(private httpClient: HttpClient, private storage: Storage) {
+  constructor(
+    private httpClient: HttpClient,
+    private storage: Storage,
+    private userService: UserService  // Inject UserService
+  ) {
     this.init();
   }
 
   async init() {
     const storage = await this.storage.create();
     this._storage = storage;
-    this.loadInitialState();
+    this.userService.userProfile$.subscribe(user => {
+      if (user?.email) {
+        this.userEmail = user.email;  // Update email when user profile changes
+        this.loadInitialState();
+      }
+    });
   }
 
   async loadInitialState() {
-    const today = new Date(new Date().setHours(0, 0, 0, 0)); // Today's date at midnight
-    const lastAccessStr = await this._storage?.get('lastAccessDate');
-    const lastAccessDate = lastAccessStr ? new Date(lastAccessStr).setHours(0, 0, 0, 0) : new Date(0); // Default to epoch if null
+    const today = new Date(new Date().setHours(0, 0, 0, 0));
+    const lastAccessStr = await this._storage?.get(this.userEmail + '_lastAccessDate');
+    const lastAccessDate = lastAccessStr ? new Date(lastAccessStr) : new Date(0);
+    lastAccessDate.setHours(0, 0, 0, 0);
 
     if (today > lastAccessDate) {
       const currentDay = await this.getCurrentDayIndex();
       const totalDays = await this.fetchTotalWorkoutDays();
-      const newIndex = (currentDay + 1) % totalDays; // Ensure the index wraps around correctly
+      const newIndex = (currentDay + 1) % totalDays;
       await this.setCurrentDayIndex(newIndex);
+      this.fetchWorkoutPlan(this.userEmail);
     } else {
       const index = await this.getCurrentDayIndex();
       this.currentDayIndex.next(index);
+      this.fetchWorkoutPlan(this.userEmail);
     }
 
-    await this._storage?.set('lastAccessDate', today.toISOString()); // Store as ISO string
-    this.fetchWorkoutPlan('gabrrielius@gmail.com'); // Load workout plan
+    await this._storage?.set(this.userEmail + '_lastAccessDate', today.toISOString());
   }
 
   async setCurrentDayIndex(index: number) {
-    await this._storage?.set('currentDayIndex', index);
+    await this._storage?.set(this.userEmail + '_currentDayIndex', index.toString());
     this.currentDayIndex.next(index);
   }
 
   async getCurrentDayIndex(): Promise<number> {
-    const index = await this._storage?.get('currentDayIndex');
-    return index !== null ? parseInt(index) : 0;  // Ensure a number is returned
+    const index = await this._storage?.get(this.userEmail + '_currentDayIndex');
+    return index ? parseInt(index) : 0;
   }
 
   async fetchTotalWorkoutDays(): Promise<number> {
-    const email = 'gabrrielius@gmail.com';  // This should ideally be dynamic based on logged-in user
     try {
-        // Use the optional chaining operator to safely access properties
-        const response = await this.httpClient.get<WorkoutPlanResponse>(`http://localhost:3000/tabs/profile/${email}`).toPromise();
-        return response?.workoutPlan?.workouts.length ?? 0;  // Provide 0 as a fallback if any property is undefined
+        const response = await this.httpClient.get<WorkoutPlanResponse>(`http://localhost:3000/tabs/profile/${this.userEmail}`).toPromise();
+        return response?.workoutPlan?.workouts.length ?? 0;
     } catch (error) {
-        console.error('Error fetching total workout days:', error);
-        return 0;  // Fallback to 0 in case of an error
+        console.error('Error fetching total workout days for', this.userEmail, ':', error);
+        return 0;
     }
-}
+  }
 
 
 fetchWorkoutPlan(email: string) {
