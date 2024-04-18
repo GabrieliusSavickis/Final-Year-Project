@@ -37,8 +37,9 @@ export class WorkoutService {
   }
 
   async loadInitialState() {
-    const today = new Date().setHours(0, 0, 0, 0); // Today's date at midnight
-    const lastAccessDate = new Date(await this._storage?.get('lastAccessDate') ?? new Date()).setHours(0, 0, 0, 0);
+    const today = new Date(new Date().setHours(0, 0, 0, 0)); // Today's date at midnight
+    const lastAccessStr = await this._storage?.get('lastAccessDate');
+    const lastAccessDate = lastAccessStr ? new Date(lastAccessStr).setHours(0, 0, 0, 0) : new Date(0); // Default to epoch if null
 
     if (today > lastAccessDate) {
       const currentDay = await this.getCurrentDayIndex();
@@ -50,7 +51,7 @@ export class WorkoutService {
       this.currentDayIndex.next(index);
     }
 
-    await this._storage?.set('lastAccessDate', today.toString()); // Update last access date
+    await this._storage?.set('lastAccessDate', today.toISOString()); // Store as ISO string
     this.fetchWorkoutPlan('gabrrielius@gmail.com'); // Load workout plan
   }
 
