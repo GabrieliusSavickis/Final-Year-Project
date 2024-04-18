@@ -175,6 +175,47 @@ def create_strength_plan(df, goal, fitness_level, days):
 
     return selected_exercises
 
+@app.route('/tabs/trainer', methods=['POST'])
+def update_user_details():
+    data = request.get_json()
+    email = data.get('email')
+    
+    # Add logic to update user details in the database
+    # This is pseudocode; adjust according to your actual data schema
+    update_user_data(email, data)
+
+    # Now also create a weight log entry
+    weight = data.get('weight')
+    if weight:  # Only create a log if weight is provided
+        create_or_update_weight_log(email, weight)
+
+    return jsonify({"status": "success"}), 200
+
+def update_user_data(email, data):
+    client = MongoClient('<your-mongodb-connection-string>')
+    db = client['Users']
+    users = db['users']
+    
+    # Update the user's data
+    users.update_one({'email': email}, {'$set': data}, upsert=True)
+    client.close()
+
+def create_or_update_weight_log(email, weight):
+    client = MongoClient('<your-mongodb-connection-string>')
+    db = client['Users']
+    weight_logs = db['weight_logs']
+    
+    # Create or update the latest weight log entry
+    weight_logs.update_one(
+        {'email': email},
+        {'$set': {
+            'weight': weight,
+            'date': datetime.now()  # Use the server's datetime
+        }},
+        upsert=True
+    )
+    client.close()
+
 @app.route('/')
 def home():
     return "The Flask server is running. Use the /api/workout-plans endpoint to post data."
