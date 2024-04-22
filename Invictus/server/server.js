@@ -64,21 +64,26 @@ const User = mongoose.model('User', userSchema);
 
 //app post
 app.post('/tabs/trainer', async (req, res) => {
-  try {
-    const user = new User({
+  const query = { email: req.body.email };
+  const update = {
+    $set: {
       height: req.body.height,
       weight: req.body.weight,
-      age: req.body.age, 
+      age: req.body.age,
       gender: req.body.gender,
       goal: req.body.goal,
       fitnessLevel: req.body.fitnessLevel,
-      workoutDays: req.body.workoutDays,
-      email: req.body.email,
-    });
-    await user.save();
-    res.send(user);
+      workoutDays: req.body.workoutDays
+    }
+  };
+  const options = { upsert: true, new: true, setDefaultsOnInsert: true };
+
+  try {
+    const user = await User.findOneAndUpdate(query, update, options);
+    res.json(user);
   } catch (error) {
-    res.status(500).send('Error saving user data'); //trying to catch the error
+    console.error('Error updating or creating user data:', error);
+    res.status(500).send('Error updating or creating user data');
   }
 });
 
