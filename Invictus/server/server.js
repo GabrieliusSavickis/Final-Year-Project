@@ -4,6 +4,7 @@ const port = 3000;
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const cron = require('node-cron');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -162,6 +163,33 @@ app.post('/update-weight', async (req, res) => {
     { new: true, upsert: true }
   );
   res.json(result);
+});
+
+
+// Define the job to check workout plan adjustments
+// Define the job to check workout plan adjustments
+cron.schedule('*/2 * * * *', async () => {
+  console.log('Running the check for workout plan adjustment every two minutes');
+
+  const users = await User.find(); // Get all users
+
+  for (let user of users) {
+    // Find the latest two weight logs for each user
+    const weightLogs = await WeightLog.findOne({ email: user.email }).sort({ 'weights.date': -1 });
+
+    if (weightLogs && weightLogs.weights.length > 1) {
+      const [latestLog, previousLog] = weightLogs.weights.slice(-2);
+      const timeDiff = new Date(latestLog.date).getTime() - new Date(previousLog.date).getTime();
+      const twoMinutes = 2 * 60 * 1000; // Two minutes in milliseconds
+
+      // Check if the latest weight log is older than two minutes and adjust the workout plan if necessary
+      if (timeDiff > twoMinutes) {
+        // Logic to adjust workout plan based on the weight trend and user's goal
+        console.log(`Suggesting workout plan adjustment for user ${user.email}`);
+        // Here, you could call a function to update the workout plan or send a notification to the user
+      }
+    }
+  }
 });
 
 

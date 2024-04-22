@@ -18,6 +18,8 @@ export class TrainerPage implements OnInit{
   workoutDays : number;
   userEmail: string;
 
+  
+
   constructor(private httpClient: HttpClient, public auth: AuthService, private userService: UserService) { 
     this.height = 0;
     this.weight = 0;
@@ -30,6 +32,7 @@ export class TrainerPage implements OnInit{
   }
 
   
+ 
 
   fetchTrainerData(email: string) {
     this.httpClient.get(`http://localhost:3000/tabs/trainer/${email}`).subscribe((data: any) => {

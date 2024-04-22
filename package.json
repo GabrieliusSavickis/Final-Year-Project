@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "@auth0/auth0-angular": "^2.2.1"
+    "@auth0/auth0-angular": "^2.2.1",
+    "node-cron": "^3.0.3"
   }
 }
