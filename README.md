@@ -8,3 +8,7 @@ invictusfyp
 npm install moment
 npm install chart.js
 
+
+pip install pandas
+pip instal pymongo
+pip install flask_cors
