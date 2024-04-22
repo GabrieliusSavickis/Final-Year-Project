@@ -144,5 +144,25 @@ app.post('/tabs/profile/update', async (req, res) => {
   }
 });
 
+const weightLogSchema = new mongoose.Schema({
+  email: String,
+  weights: [{
+    date: Date,
+    weight: Number
+  }]
+});
+
+const WeightLog = mongoose.model('WeightLog', weightLogSchema);
+
+app.post('/update-weight', async (req, res) => {
+  const { email, weight } = req.body;
+  const result = await WeightLog.findOneAndUpdate(
+    { email: email },
+    { $push: { weights: { date: new Date(), weight: weight } } },
+    { new: true, upsert: true }
+  );
+  res.json(result);
+});
+
 
 

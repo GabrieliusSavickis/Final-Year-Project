@@ -59,7 +59,7 @@ export class TrainerPage implements OnInit{
       return;
     }
   
-    const data = {
+    const userData = {
       email: this.userEmail,
       height: this.height,
       weight: this.weight,
@@ -70,9 +70,25 @@ export class TrainerPage implements OnInit{
       workoutDays: this.workoutDays,
     };
   
-    this.httpClient.post('http://localhost:3000/tabs/trainer', data).subscribe({
-      next: (response) => console.log('Data saved:', response),
-      error: (error) => console.error('Error saving data:', error),
+    // Update user general data
+    this.httpClient.post('http://localhost:3000/tabs/trainer', userData).subscribe({
+      next: (response) => {
+        console.log('User data saved:', response);
+        this.updateWeightLog(this.weight);  // Call to update weight log
+      },
+      error: (error) => console.error('Error saving user data:', error),
+    });
+  }
+  
+  updateWeightLog(weight: number) {
+    const weightData = {
+      email: this.userEmail,
+      weight: weight
+    };
+  
+    this.httpClient.post('http://localhost:3000/update-weight', weightData).subscribe({
+      next: (response) => console.log('Weight log updated:', response),
+      error: (error) => console.error('Error updating weight log:', error)
     });
   }
 
