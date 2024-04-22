@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService, LogoutOptions } from '@auth0/auth0-angular';
 import { UserService } from '../../services/user.service';
@@ -33,6 +33,7 @@ export class TrainerPage implements OnInit{
 
   fetchTrainerData(email: string) {
     this.httpClient.get(`http://localhost:3000/tabs/trainer/${email}`).subscribe((data: any) => {
+      console.log('Fetched data:', data); // Debug to see raw data
       if (data) {
         // Update form fields with fetched data
         this.height = data.height;

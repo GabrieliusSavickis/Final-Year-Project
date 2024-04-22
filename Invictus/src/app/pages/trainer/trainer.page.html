@@ -51,9 +51,9 @@
         <ion-item>
           <ion-label position="stacked">Workout Days (per week)</ion-label>
           <ion-select [(ngModel)]="workoutDays" name="workoutDays" interface="popover" placeholder="Select One" required>
-            <ion-select-option value="1">1</ion-select-option>
-            <ion-select-option value="2">2</ion-select-option>
-            <ion-select-option value="3">3</ion-select-option>
+            <ion-select-option [value]="1">1</ion-select-option>
+            <ion-select-option [value]="2">2</ion-select-option>
+            <ion-select-option [value]="3">3</ion-select-option>
           </ion-select>
         </ion-item>
       </ion-list>
