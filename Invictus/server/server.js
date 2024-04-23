@@ -121,7 +121,11 @@ app.get('/tabs/trainer/:email', async (req, res) => {
     const email = req.params.email;
     const user = await User.findOne({ email: email });
     if (user) {
-      res.json(user);
+      // Fetching associated weight logs
+      const weightLogs = await WeightLog.findOne({ email: email }).sort({'weights.date': -1});
+      const userData = user.toObject();  // Convert Mongoose document to plain object
+      userData.weights = weightLogs ? weightLogs.weights : [];  // Add weight logs to user data
+      res.json(userData);
     } else {
       res.status(404).send('User not found');
     }
@@ -166,7 +170,6 @@ app.post('/update-weight', async (req, res) => {
 });
 
 
-// Define the job to check workout plan adjustments
 // Define the job to check workout plan adjustments
 cron.schedule('*/2 * * * *', async () => {
   console.log('Running the check for workout plan adjustment every two minutes');

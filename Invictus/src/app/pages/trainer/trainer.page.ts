@@ -1,8 +1,9 @@
-import { Component, OnInit, OnDestroy} from '@angular/core';
+import { Component, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService, LogoutOptions } from '@auth0/auth0-angular';
 import { UserService } from '../../services/user.service';
 import * as moment from 'moment';
+import { Subscription } from 'rxjs';
 
 
 @Component({
@@ -22,7 +23,7 @@ export class TrainerPage implements OnInit, OnDestroy{
   reminderSet: boolean = false;
   suggestionSet: boolean = false;
   lastWeightUpdate!: Date;
-  private intervalId: any;
+  private profileSubscription!: Subscription;
 
   constructor(private httpClient: HttpClient, public auth: AuthService, 
     private userService: UserService) { 
@@ -36,50 +37,81 @@ export class TrainerPage implements OnInit, OnDestroy{
     this.userEmail = '';
   }
 
-  fetchTrainerData(email: string) {
-    this.httpClient.get(`http://localhost:3000/tabs/trainer/${email}`).subscribe((data: any) => {
-      console.log('Fetched data:', data); // Debug to see raw data
-      if (data) {
-        // Update form fields with fetched data
-        this.height = data.height;
-        this.weight = data.weight;
-        this.age = data.age;
-        this.gender = data.gender;
-        this.goal = data.goal;
-        this.fitnessLevel = data.fitnessLevel;
-        this.workoutDays = data.workoutDays;
-        
-        // Only set lastWeightUpdate if weight data is present
-        if (data.weights && data.weights.length > 0) {
-          this.lastWeightUpdate = new Date(data.weights[data.weights.length - 1].date);
-          this.setReminder();
-        }
-
-        if (!this.intervalId) {
-          this.intervalId = setInterval(() => {
-            this.setReminder();
-          }, 60000);
-        }
+  ngOnInit() {
+    this.userService.userProfile$.subscribe(profile => {
+      if (profile && profile.email) {
+        this.userEmail = profile.email;
+        this.fetchTrainerData(this.userEmail);
       }
-    }, error => {
-      console.error('Error fetching trainer data:', error);
     });
   }
 
-  // Add a method to set a reminder based on the last weight update
-  setReminder() {
-    const oneMinute = 60000; // one minute in milliseconds
-    const currentTimeUtc = moment.utc();
-    const lastUpdateTimeUtc = moment.utc(this.lastWeightUpdate);
-    const durationSinceLastUpdate = currentTimeUtc.diff(lastUpdateTimeUtc);
+  ngOnDestroy(): void {
+    if (this.profileSubscription) {
+      this.profileSubscription.unsubscribe();
+    }
+  }
+
+  fetchTrainerData(email: string): void {
+    this.httpClient.get(`http://localhost:3000/tabs/trainer/${email}`).subscribe({
+      next: (data: any) => {
+        console.log('Fetched data:', data); // Check the complete structure here.
+        this.updateUserData(data);
+        
+      },
+      error: (error) => console.error('Error fetching trainer data:', error)
+    });
+  }
+
+  updateUserData(data: any): void {
+    this.height = data.height;
+    this.weight = data.weight;
+    this.age = data.age;
+    this.gender = data.gender;
+    this.goal = data.goal;
+    this.fitnessLevel = data.fitnessLevel;
+    this.workoutDays = data.workoutDays;
+    if (data.weights && data.weights.length > 0) {
+      this.lastWeightUpdate = new Date(data.weights[data.weights.length - 1].date);
+      console.log('Last weight update set:', this.lastWeightUpdate);
+      this.checkRemindersAndSuggestions(); // Call this method here to use the updated date.
+    } else {
+      console.log('No weight logs available.');
+    }
+  }
+
+  checkRemindersAndSuggestions(): void {
+    if (!this.lastWeightUpdate) {
+      console.log("No lastWeightUpdate set yet.");
+      return;
+    }
+  
+    const currentTime = moment.utc();
+    const lastUpdateTime = moment.utc(this.lastWeightUpdate);
+    const durationSinceLastUpdate = currentTime.diff(lastUpdateTime);
+  
+    console.log(`Current Time: ${currentTime.toISOString()}`);
+    console.log(`Last Update Time: ${lastUpdateTime.toISOString()}`);
+    console.log(`Duration Since Last Update: ${durationSinceLastUpdate}`);
+  
+    const oneMinute = 60000; // 1 minute in milliseconds
+    const twoMinutes = 120000; // 2 minutes in milliseconds
   
     if (durationSinceLastUpdate > oneMinute) {
       this.reminderSet = true;
+      console.log("Reminder set to true.");
+    } else {
+      this.reminderSet = false;
     }
-    if (durationSinceLastUpdate > 2 * oneMinute) {
+  
+    if (durationSinceLastUpdate > twoMinutes) {
       this.suggestionSet = true;
+      console.log("Suggestion set to true.");
+    } else {
+      this.suggestionSet = false;
     }
   }
+
 
 increaseIntensity() {
   // Logic to increase the workout intensity
@@ -152,24 +184,8 @@ keepIntensity() {
     });
   }
 
-  ngOnInit() {
-    this.userService.userProfile$.subscribe(profile => {
-      if (profile && profile.email) {
-        this.userEmail = profile.email;
-        this.fetchTrainerData(this.userEmail);
-      }
-    });
-  }
-
-  ngOnDestroy() {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-    }
-  }
-
   logout() {
     this.auth.logout({ returnTo: `${window.location.origin}/login` } as LogoutOptions);
   }
-
 
 }
