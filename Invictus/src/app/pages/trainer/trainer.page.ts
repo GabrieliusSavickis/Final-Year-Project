@@ -4,6 +4,7 @@ import { AuthService, LogoutOptions } from '@auth0/auth0-angular';
 import { UserService } from '../../services/user.service';
 import * as moment from 'moment';
 
+
 @Component({
   selector: 'app-trainer',
   templateUrl: './trainer.page.html',
@@ -47,13 +48,18 @@ export class TrainerPage implements OnInit, OnDestroy{
         this.goal = data.goal;
         this.fitnessLevel = data.fitnessLevel;
         this.workoutDays = data.workoutDays;
-        this.lastWeightUpdate = new Date(data.weights[data.weights.length - 1].date);
-        this.setReminder();
+        
+        // Only set lastWeightUpdate if weight data is present
         if (data.weights && data.weights.length > 0) {
           this.lastWeightUpdate = new Date(data.weights[data.weights.length - 1].date);
           this.setReminder();
         }
-        
+
+        if (!this.intervalId) {
+          this.intervalId = setInterval(() => {
+            this.setReminder();
+          }, 60000);
+        }
       }
     }, error => {
       console.error('Error fetching trainer data:', error);
@@ -63,14 +69,14 @@ export class TrainerPage implements OnInit, OnDestroy{
   // Add a method to set a reminder based on the last weight update
   setReminder() {
     const oneMinute = 60000; // one minute in milliseconds
-    const currentTime = moment();
-    const lastUpdateTime = moment(this.lastWeightUpdate);
-    const durationSinceLastUpdate = moment.duration(currentTime.diff(lastUpdateTime));
+    const currentTimeUtc = moment.utc();
+    const lastUpdateTimeUtc = moment.utc(this.lastWeightUpdate);
+    const durationSinceLastUpdate = currentTimeUtc.diff(lastUpdateTimeUtc);
   
-    if (durationSinceLastUpdate.asMilliseconds() > oneMinute) {
+    if (durationSinceLastUpdate > oneMinute) {
       this.reminderSet = true;
     }
-    if (durationSinceLastUpdate.asMilliseconds() > 2 * oneMinute) {
+    if (durationSinceLastUpdate > 2 * oneMinute) {
       this.suggestionSet = true;
     }
   }
@@ -153,12 +159,6 @@ keepIntensity() {
         this.fetchTrainerData(this.userEmail);
       }
     });
-
-    this.intervalId = setInterval(() => {
-      if (this.lastWeightUpdate) {
-        this.setReminder();
-      }
-    }, 60000);
   }
 
   ngOnDestroy() {
