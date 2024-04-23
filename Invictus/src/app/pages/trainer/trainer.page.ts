@@ -24,6 +24,7 @@ export class TrainerPage implements OnInit, OnDestroy{
   suggestionSet: boolean = false;
   lastWeightUpdate!: Date;
   private profileSubscription!: Subscription;
+  lastInteractionDate: Date | null = null; // Track when the user last interacted with the suggestion.
 
   constructor(private httpClient: HttpClient, public auth: AuthService, 
     private userService: UserService) { 
@@ -104,7 +105,7 @@ export class TrainerPage implements OnInit, OnDestroy{
       this.reminderSet = false;
     }
   
-    if (durationSinceLastUpdate > twoMinutes) {
+    if (durationSinceLastUpdate > twoMinutes && (!this.lastInteractionDate || currentTime.diff(moment.utc(this.lastInteractionDate)) > twoMinutes)) {
       this.suggestionSet = true;
       console.log("Suggestion set to true.");
     } else {
@@ -119,15 +120,20 @@ export class TrainerPage implements OnInit, OnDestroy{
       increaseIntensity: true
     };
     this.httpClient.post('http://localhost:5000/api/adjust-intensity', intensityData).subscribe({
-      next: (response) => console.log('Intensity increased:', response),
+      next: (response) => {
+        console.log('Intensity increased:', response);
+        this.lastInteractionDate = new Date(); // Update last interaction date
+        this.suggestionSet = false; // Reset suggestion state
+      },
       error: (error) => console.error('Error increasing intensity:', error)
     });
   }
 
-keepIntensity() {
-  // Logic to acknowledge the user's choice
-  // You may want to log this choice or update something in the user's profile
-}
+  keepIntensity() {
+    this.lastInteractionDate = new Date(); // Update last interaction date
+    this.suggestionSet = false; // Reset suggestion state
+    console.log("User chose to keep the current intensity. No changes will be made.");
+  }
 
   saveData() {
     if (!this.userEmail) {
