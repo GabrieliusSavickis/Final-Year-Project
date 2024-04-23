@@ -177,6 +177,7 @@ const workoutMetricsSchema = new mongoose.Schema({
   workoutStartTime: Number,
   workoutEndTime: Number,
   durationInSeconds: Number,
+  weeklyWorkoutTimeInSeconds: Number,
   dateLogged: { type: Date, default: Date.now }
 }, {
   collection: 'workout_metrics'
@@ -185,7 +186,7 @@ const workoutMetricsSchema = new mongoose.Schema({
 const WorkoutMetrics = mongoose.model('WorkoutMetrics', workoutMetricsSchema);
 
 app.post('/api/workout-metrics', async (req, res) => {
-  const { userId, workoutDays, workoutStartTime, workoutEndTime, durationInSeconds } = req.body;
+  const { userId, workoutDays, workoutStartTime, workoutEndTime, durationInSeconds, weeklyWorkoutTimeInSeconds } = req.body;
 
   try {
     // Convert string values to numbers if necessary.
@@ -194,7 +195,8 @@ app.post('/api/workout-metrics', async (req, res) => {
       workoutDays,
       workoutStartTime: parseInt(workoutStartTime),
       workoutEndTime: parseInt(workoutEndTime),
-      durationInSeconds: parseFloat(durationInSeconds)
+      durationInSeconds: parseFloat(durationInSeconds),
+      weeklyWorkoutTimeInSeconds: parseFloat(weeklyWorkoutTimeInSeconds)
     });
 
     const savedMetrics = await metrics.save();
@@ -221,6 +223,28 @@ app.get('/api/workout-days/:email', async (req, res) => {
   } catch (error) {
     console.error('Error retrieving workout days:', error);
     res.status(500).json({ message: 'Error retrieving workout days' });
+  }
+});
+
+app.get('/api/weekly-workout-time/:email', async (req, res) => {
+  try {
+    const email = req.params.email;
+    const startOfWeek = moment().startOf('isoWeek'); // use isoWeek for consistency (Monday as the first day of the week)
+    const endOfWeek = moment().endOf('isoWeek');
+
+    const workouts = await WorkoutMetrics.find({
+      userId: email,
+      dateLogged: { $gte: startOfWeek.toDate(), $lte: endOfWeek.toDate() }
+    });
+
+    const weeklyWorkoutTimeInSeconds = workouts.reduce((total, workout) => {
+      return total + workout.durationInSeconds;
+    }, 0);
+
+    res.json({ weeklyWorkoutTimeInSeconds });
+  } catch (error) {
+    console.error('Error retrieving weekly workout time:', error);
+    res.status(500).json({ message: 'Error retrieving weekly workout time' });
   }
 });
 

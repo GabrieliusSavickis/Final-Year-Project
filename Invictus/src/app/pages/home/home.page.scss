@@ -125,22 +125,22 @@ ion-card-content {
   }
 }
 
-.overall-workout-time {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 20px;
-  width: 100%;
-}
-
-.overall-workout-time h2 {
-  font-size: 1.5em;
-  margin-bottom: 10px;
-  font-weight: bold;
-}
 
 .time-display {
   font-size: 2em;
   font-weight: bold;
+  text-align: center;
   color: #333;
 }
+
+.overall-workout-time-card {
+  margin: 10px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+ion-card-header ion-card-title {
+  text-align: center;
+  display: block; /* Ensures that the title spans the full width inside the header */
+}
+

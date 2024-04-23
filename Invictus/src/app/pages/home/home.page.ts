@@ -24,6 +24,7 @@ export class HomePage {
   workoutDurationInSeconds = 0;
   displayTime = '00:00:00';
   lastResetDay: number = moment().dayOfYear();
+  overallWorkoutTime: number = 0; // Initialized to 0 here
 
   todaysWorkout$ = this.workoutService.todaysWorkout$;
   currentDayIndex$ = this.workoutService.currentDayIndex$;
@@ -43,6 +44,7 @@ export class HomePage {
       if (user && user.email) {
         this.userEmail = user.email;  // Set userEmail when user data is available
         this.fetchWorkoutDays(); // Fetch workout days on initialization
+        this.fetchWeeklyWorkoutTime();
       }
     });
 
@@ -60,6 +62,7 @@ export class HomePage {
 
     // Check if a reset is needed every time the component is loaded.
     this.checkAndResetWeeklyWorkout();
+    
   }
 
   ngOnDestroy(): void {
@@ -104,21 +107,23 @@ export class HomePage {
     workoutDays: string[], 
     workoutStartTime: number, 
     workoutEndTime: number, 
-    durationInSeconds: number
+    durationInSeconds: number,
   ): void {
     const metricsData = {
       userId: this.userEmail,  // Make sure you have defined this previously or fetch from a reliable source
       workoutDays,
       workoutStartTime,
       workoutEndTime,
-      durationInSeconds
+      durationInSeconds,
     };
   
     this.httpClient.post('http://localhost:3000/api/workout-metrics', metricsData).subscribe({
-      next: (response) => console.log('Workout metrics saved:', response),
-      error: (error) => console.error('Error saving workout metrics:', error)
-    });
-  }
+    next: (response) => {
+      console.log('Workout metrics saved:', response);
+    },
+    error: (error) => console.error('Error saving workout metrics:', error)
+  });
+}
 
   updateDisplayTime() {
     const hours = Math.floor(this.workoutDurationInSeconds / 3600);
@@ -131,9 +136,6 @@ export class HomePage {
   pad(num: number) {
     return num.toString().padStart(2, '0');
   }
-
-  // Placeholder for overall workout time (in seconds)
-  overallWorkoutTime = 3600; // 1 hour as an example
 
   formatTime(seconds: number): string {
     const hours = Math.floor(seconds / 3600);
@@ -170,6 +172,18 @@ export class HomePage {
           this.changeDetectorRef.detectChanges(); // Update the view
         },
         error: (error) => console.error('Error fetching workout days:', error)
+      });
+  }
+
+  fetchWeeklyWorkoutTime() {
+    this.httpClient.get<{ weeklyWorkoutTimeInSeconds: number }>(`http://localhost:3000/api/weekly-workout-time/${this.userEmail}`)
+      .subscribe({
+        next: (data) => {
+          // Use the correct property from your backend response here
+          this.overallWorkoutTime = data.weeklyWorkoutTimeInSeconds;
+          this.changeDetectorRef.detectChanges(); // Update the view if necessary
+        },
+        error: (error) => console.error('Error fetching weekly workout time:', error)
       });
   }
 

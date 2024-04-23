@@ -26,14 +26,15 @@
     </ion-card-content>
   </ion-card>
 
-<div class="timer-container">
-  <div class="timer-display">Workout Time: {{ displayTime }}</div>
-  <button class="start-stop-button" [class.stop]="isWorkoutStarted" (click)="toggleWorkout()">
-    {{ isWorkoutStarted ? 'Stop Workout' : 'Start Workout' }}
-  </button>
-</div>
+  <div class="timer-container">
+    <div class="timer-display">Workout Time: {{ displayTime }}</div>
+    <button class="start-stop-button" [class.stop]="isWorkoutStarted" (click)="toggleWorkout()">
+      {{ isWorkoutStarted ? 'Stop Workout' : 'Start Workout' }}
+    </button>
+  </div>
 
-<ion-content>
+ 
+
   <ng-container *ngIf="todaysWorkout$ | async as todaysWorkout; else loadingTemplate">
     <div *ngIf="todaysWorkout && !todaysWorkout.completed; else workoutCompleteTemplate">
       <div class="workout-container">
@@ -72,14 +73,18 @@
       <p>No workout for today or error fetching workout plan. Please try again later.</p>
     </div>
   </ng-template>
-</ion-content>
 
- <!-- Overall Workout Time Section -->
- <div class="overall-workout-time">
-  <h2>Overall Workout Time This Week</h2>
-  <div class="time-display">
-    {{ formatTime(overallWorkoutTime) }}
-  </div>
-</div>
-</ion-content>
+   
+   <!-- Overall Workout Time Section in a card -->
+  <ion-card class="overall-workout-time-card">
+    <ion-card-header>
+      <ion-card-title>Overall Workout Time This Week</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="time-display">
+        {{ formatTime(overallWorkoutTime) }}
+      </div>
+    </ion-card-content>
+  </ion-card>
 
+</ion-content>
