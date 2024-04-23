@@ -132,10 +132,8 @@ def create_cardio_plan(df, days, fitness_level, exercises_per_day=6):
 
     return selected_exercises
 
-def create_strength_plan(df, goal, fitness_level, days):
-    goal_map = {
-        "gainMuscle": "Type_Strength"
-    }
+def create_strength_plan(df, goal, fitness_level, days, exercises_per_day):
+    goal_map = {"gainMuscle": "Type_Strength"}
     goal_column = goal_map.get(goal, "Type_Strength")
     fitness_level_map = {"beginner": 0, "intermediate": 1, "advanced": 2}
     level_index = fitness_level_map.get(fitness_level, 0)
@@ -143,16 +141,17 @@ def create_strength_plan(df, goal, fitness_level, days):
     filtered_df = df[(df[goal_column] == 1) & (df['Level'] == level_index)]
     all_body_parts = [col.replace('BodyPart_', '') for col in df.columns if 'BodyPart_' in col and filtered_df[col].any()]
 
+    # Adjust the distribution of exercises per day based on the intensity increase
     muscle_groups_per_day = {
-        1: 6,  # For 1 workout day per week: 6 muscle groups, 1 exercise each
-        2: 3,  # For 2 workout days per week: 3 muscle groups, 2 exercises each
-        3: 2   # For 3 workout days per week: 2 muscle groups, 3 exercises each
+        1: 8 if exercises_per_day > 6 else 6,
+        2: 3,
+        3: 2
     }.get(days, 6)  # Default to 6 muscle groups per day if days are not 1, 2, or 3
 
     exercises_per_muscle_group = {
-        1: 1,
-        2: 2,
-        3: 3
+        1: 8 if exercises_per_day > 6 else 6,
+        2: exercises_per_day // 3 if days == 2 else 2,
+        3: exercises_per_day // 2 if days == 3 else 3
     }.get(days, 1)  # Default to 1 exercise per muscle group if days are not 1, 2, or 3
 
     selected_exercises = []
@@ -180,6 +179,7 @@ def create_strength_plan(df, goal, fitness_level, days):
         selected_exercises.append(day_exercises)
 
     return selected_exercises
+
 
 
 
