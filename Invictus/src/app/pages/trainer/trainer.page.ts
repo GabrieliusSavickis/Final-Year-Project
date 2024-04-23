@@ -1,14 +1,15 @@
-import { Component, OnInit} from '@angular/core';
+import { Component, OnInit, OnDestroy} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService, LogoutOptions } from '@auth0/auth0-angular';
 import { UserService } from '../../services/user.service';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-trainer',
   templateUrl: './trainer.page.html',
   styleUrls: ['./trainer.page.scss'],
 })
-export class TrainerPage implements OnInit{
+export class TrainerPage implements OnInit, OnDestroy{
   height: number;
   weight: number;
   age: number;
@@ -17,10 +18,13 @@ export class TrainerPage implements OnInit{
   fitnessLevel : string;
   workoutDays : number;
   userEmail: string;
+  reminderSet: boolean = false;
+  suggestionSet: boolean = false;
+  lastWeightUpdate!: Date;
+  private intervalId: any;
 
-  
-
-  constructor(private httpClient: HttpClient, public auth: AuthService, private userService: UserService) { 
+  constructor(private httpClient: HttpClient, public auth: AuthService, 
+    private userService: UserService) { 
     this.height = 0;
     this.weight = 0;
     this.age = 0;
@@ -30,9 +34,6 @@ export class TrainerPage implements OnInit{
     this.workoutDays = 0;
     this.userEmail = '';
   }
-
-  
- 
 
   fetchTrainerData(email: string) {
     this.httpClient.get(`http://localhost:3000/tabs/trainer/${email}`).subscribe((data: any) => {
@@ -46,15 +47,43 @@ export class TrainerPage implements OnInit{
         this.goal = data.goal;
         this.fitnessLevel = data.fitnessLevel;
         this.workoutDays = data.workoutDays;
+        this.lastWeightUpdate = new Date(data.weights[data.weights.length - 1].date);
+        this.setReminder();
+        if (data.weights && data.weights.length > 0) {
+          this.lastWeightUpdate = new Date(data.weights[data.weights.length - 1].date);
+          this.setReminder();
+        }
+        
       }
     }, error => {
       console.error('Error fetching trainer data:', error);
     });
   }
 
-  logout() {
-    this.auth.logout({ returnTo: `${window.location.origin}/login` } as LogoutOptions);
+  // Add a method to set a reminder based on the last weight update
+  setReminder() {
+    const oneMinute = 60000; // one minute in milliseconds
+    const currentTime = moment();
+    const lastUpdateTime = moment(this.lastWeightUpdate);
+    const durationSinceLastUpdate = moment.duration(currentTime.diff(lastUpdateTime));
+  
+    if (durationSinceLastUpdate.asMilliseconds() > oneMinute) {
+      this.reminderSet = true;
+    }
+    if (durationSinceLastUpdate.asMilliseconds() > 2 * oneMinute) {
+      this.suggestionSet = true;
+    }
   }
+
+increaseIntensity() {
+  // Logic to increase the workout intensity
+  // This may involve calling an API endpoint that updates the workout plan
+}
+
+keepIntensity() {
+  // Logic to acknowledge the user's choice
+  // You may want to log this choice or update something in the user's profile
+}
 
   saveData() {
     if (!this.userEmail) {
@@ -120,9 +149,27 @@ export class TrainerPage implements OnInit{
   ngOnInit() {
     this.userService.userProfile$.subscribe(profile => {
       if (profile && profile.email) {
-        this.userEmail = profile.email; // Store the user email
-        this.fetchTrainerData(this.userEmail); // Fetch trainer data with email
+        this.userEmail = profile.email;
+        this.fetchTrainerData(this.userEmail);
       }
     });
+
+    this.intervalId = setInterval(() => {
+      if (this.lastWeightUpdate) {
+        this.setReminder();
+      }
+    }, 60000);
   }
+
+  ngOnDestroy() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+    }
+  }
+
+  logout() {
+    this.auth.logout({ returnTo: `${window.location.origin}/login` } as LogoutOptions);
+  }
+
+
 }

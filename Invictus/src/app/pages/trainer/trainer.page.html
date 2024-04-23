@@ -11,6 +11,21 @@
 
 <ion-content>
   <div class="ion-padding">
+
+    <!-- Display a reminder if it's been one minute since the last weight update -->
+    <div *ngIf="reminderSet" class="reminder">
+      <ion-icon name="time-outline"></ion-icon>
+      Remember to update your weight every week!
+    </div>
+
+    <!-- Display a suggestion if it's been two minutes since the last weight update -->
+    <div *ngIf="suggestionSet" class="suggestion">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      It's been 2 Minutes with no results, would you like to increase the intensity?
+      <ion-button (click)="increaseIntensity()">Yes</ion-button>
+      <ion-button (click)="keepIntensity()">No</ion-button>
+    </div>
+
     <form (ngSubmit)="saveData()">
       <ion-list lines="full" class="ion-margin-vertical">
         <ion-item>
