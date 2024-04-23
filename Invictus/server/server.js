@@ -248,6 +248,45 @@ app.get('/api/weekly-workout-time/:email', async (req, res) => {
   }
 });
 
+const exerciseCompletionSchema = new mongoose.Schema({
+  userId: String,
+  exerciseTitle: String,
+  isCompleted: Boolean,
+  timestamp: Date,
+});
+
+const ExerciseCompletion = mongoose.model('ExerciseCompletion', exerciseCompletionSchema);
+
+app.post('/api/log-exercise-completion', async (req, res) => {
+  try {
+    const completion = new ExerciseCompletion(req.body);
+    await completion.save();
+    res.status(201).json(completion);
+  } catch (error) {
+    console.error('Error logging exercise completion:', error);
+    res.status(500).json({ message: 'Error logging exercise completion' });
+  }
+});
+
+const workoutCompletionSchema = new mongoose.Schema({
+  userId: String,
+  dayCompleted: Date,
+  workoutId: mongoose.Schema.Types.ObjectId,
+});
+
+const WorkoutCompletion = mongoose.model('WorkoutCompletion', workoutCompletionSchema);
+
+app.post('/api/log-workout-completion', async (req, res) => {
+  try {
+    const completion = new WorkoutCompletion(req.body);
+    await completion.save();
+    res.status(201).json(completion);
+  } catch (error) {
+    console.error('Error logging workout completion:', error);
+    res.status(500).json({ message: 'Error logging workout completion' });
+  }
+});
+
 
 // Define the job to check workout plan adjustments
 cron.schedule('*/2 * * * *', async () => {

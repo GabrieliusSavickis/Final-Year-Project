@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject } from 'rxjs';
 import { Storage } from '@ionic/storage-angular';
 import { UserService } from './user.service';
+import * as moment from 'moment';
 
 interface WorkoutPlanResponse {
   workoutPlan?: {
@@ -132,17 +133,49 @@ fetchWorkoutPlan(email: string) {
   toggleExerciseCompletion(exerciseIndex: number) {
     let workout = this.todaysWorkout.value;
     if (workout && workout.Exercises[exerciseIndex]) {
-      workout.Exercises[exerciseIndex].isCompleted = !workout.Exercises[exerciseIndex].isCompleted;
+      const exercise = workout.Exercises[exerciseIndex];
+      exercise.isCompleted = !exercise.isCompleted;
       this.todaysWorkout.next(workout);
+      this.logExerciseCompletion(exercise, exercise.isCompleted);
       this.checkCompletion(workout);
     }
+  }
+
+  logExerciseCompletion(exercise: any, isCompleted: boolean) {
+    const completionData = {
+      userId: this.userEmail,
+      exerciseTitle: exercise.Title,
+      isCompleted: isCompleted,
+      timestamp: new Date(),
+    };
+  
+    this.httpClient.post('http://localhost:3000/api/log-exercise-completion', completionData)
+      .subscribe({
+        next: (response) => console.log('Exercise completion logged:', response),
+        error: (error) => console.error('Error logging exercise completion:', error),
+      });
   }
 
   checkCompletion(workout: any) {
     if (workout.Exercises.every((ex: any) => ex.isCompleted)) {
       console.log('Congratulations, you have finished today\'s workout!');
+      this.logWorkoutCompletion(workout);
       this.incrementDay();  // Move to the next day
       this.todaysWorkout.next({ ...workout, completed: true });  // Mark as completed
     }
+  }
+
+  logWorkoutCompletion(workout: any) {
+    const workoutCompletionData = {
+      userId: this.userEmail,
+      dayCompleted: moment().format('YYYY-MM-DD'),
+      workoutId: workout._id, // assuming each workout has a unique identifier
+    };
+  
+    this.httpClient.post('http://localhost:3000/api/log-workout-completion', workoutCompletionData)
+      .subscribe({
+        next: (response) => console.log('Workout completion logged:', response),
+        error: (error) => console.error('Error logging workout completion:', error),
+      });
   }
 }
