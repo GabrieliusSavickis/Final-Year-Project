@@ -9,8 +9,11 @@ import { Router } from '@angular/router';
   styleUrls: ['./login.page.scss'],
 })
 export class LoginPage {
+  adminUsername: string = '';
+  adminPassword: string = '';
 
   constructor(public auth: AuthService, private router: Router) { }
+
   ngOnInit() {
     // Subscribe to authentication state changes
     this.auth.isAuthenticated$.subscribe((isAuthenticated) => {
@@ -20,4 +23,15 @@ export class LoginPage {
       }
     });
   }
+
+
+  adminLogin() {
+    if (this.adminUsername === 'admin' && this.adminPassword === 'admin123') {
+      this.router.navigate(['/admin']);
+    } else {
+      alert('Invalid credentials');
+    }
+  }
+
+
 }

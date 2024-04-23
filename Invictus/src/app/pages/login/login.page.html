@@ -1,5 +1,18 @@
 <ion-content>
-    <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+    <div style="display: flex; justify-content: center; align-items: center; height: 50%;">
       <ion-button (click)="auth.loginWithRedirect()">Login</ion-button>
+    </div>
+    <div style="display: flex; justify-content: center; align-items: center; height: 50%;">
+      <form (ngSubmit)="adminLogin()">
+        <ion-item>
+          <ion-label position="floating">Username</ion-label>
+          <ion-input type="text" [(ngModel)]="adminUsername" name="adminUsername"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="floating">Password</ion-label>
+          <ion-input type="password" [(ngModel)]="adminPassword" name="adminPassword"></ion-input>
+        </ion-item>
+        <ion-button type="submit" expand="block">Admin Login</ion-button>
+      </form>
     </div>
   </ion-content>
