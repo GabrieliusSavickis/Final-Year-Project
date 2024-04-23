@@ -169,6 +169,24 @@ app.post('/update-weight', async (req, res) => {
   res.json(result);
 });
 
+app.post('/api/workout-metrics', async (req, res) => {
+  const { userId, workoutDays, workoutStartTime, workoutEndTime, durationInSeconds } = req.body;
+  try {
+    const metrics = await db.collection('workout_metrics').insertOne({
+      userId,
+      workoutDays: Array.from(workoutDays), // Ensure it's an array
+      workoutStartTime,
+      workoutEndTime,
+      durationInSeconds,
+      dateLogged: new Date()
+    });
+    res.status(201).json(metrics);
+  } catch (error) {
+    console.error('Error saving workout metrics:', error);
+    res.status(500).send('Failed to save workout metrics');
+  }
+});
+
 
 // Define the job to check workout plan adjustments
 cron.schedule('*/2 * * * *', async () => {

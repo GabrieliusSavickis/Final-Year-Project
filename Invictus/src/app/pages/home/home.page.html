@@ -18,6 +18,7 @@
     </ion-card-header>
     <ion-card-content>
       <div class="week-days">
+        <!-- Use class binding to apply 'workout-day' based on condition -->
         <div *ngFor="let day of weekDays" class="day" [class.workout-day]="workoutDays.has(day)">
           {{ day }}
         </div>
