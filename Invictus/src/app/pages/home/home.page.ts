@@ -42,6 +42,7 @@ export class HomePage {
     this.authSubscription = this.auth.user$.subscribe(user => {
       if (user && user.email) {
         this.userEmail = user.email;  // Set userEmail when user data is available
+        this.fetchWorkoutDays(); // Fetch workout days on initialization
       }
     });
 
@@ -75,13 +76,13 @@ export class HomePage {
     this.isWorkoutStarted = !this.isWorkoutStarted;
   
     if (this.isWorkoutStarted) {
-      this.workoutStartTime = Date.now(); // Record start time
+      this.workoutStartTime = Math.floor(Date.now()); // Record start time
       this.startTimer();
       this.workoutDays.add(moment().format('dd')); // Use 'ddd' for unique three-letter day abbreviations
       console.log(this.workoutDays);
       this.changeDetectorRef.detectChanges();
     } else {
-      const workoutEndTime = Date.now();
+      const workoutEndTime = Math.floor(Date.now());
       const durationInSeconds = (workoutEndTime - this.workoutStartTime) / 1000;
       this.stopTimer();
       this.saveWorkoutMetrics(Array.from(this.workoutDays), this.workoutStartTime, workoutEndTime, durationInSeconds);
@@ -156,6 +157,20 @@ export class HomePage {
     this.overallWorkoutTime = 0; // Reset the overall workout time or any other weekly data
     this.changeDetectorRef.detectChanges();
     // Save or update this information in the backend if needed
+  }
+
+  fetchWorkoutDays() {
+    this.httpClient.get<string[]>(`http://localhost:3000/api/workout-days/${this.userEmail}`)
+      .subscribe({
+        next: (workoutDays: string[]) => {
+          // Assuming the endpoint returns an array of strings representing the days
+          workoutDays.forEach(day => {
+            this.workoutDays.add(day);
+          });
+          this.changeDetectorRef.detectChanges(); // Update the view
+        },
+        error: (error) => console.error('Error fetching workout days:', error)
+      });
   }
 
   

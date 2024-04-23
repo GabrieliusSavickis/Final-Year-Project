@@ -5,6 +5,8 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const cron = require('node-cron');
+const db = mongoose.connection;
+const moment = require('moment');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -169,21 +171,56 @@ app.post('/update-weight', async (req, res) => {
   res.json(result);
 });
 
+const workoutMetricsSchema = new mongoose.Schema({
+  userId: String,
+  workoutDays: [String],
+  workoutStartTime: Number,
+  workoutEndTime: Number,
+  durationInSeconds: Number,
+  dateLogged: { type: Date, default: Date.now }
+}, {
+  collection: 'workout_metrics'
+});
+
+const WorkoutMetrics = mongoose.model('WorkoutMetrics', workoutMetricsSchema);
+
 app.post('/api/workout-metrics', async (req, res) => {
   const { userId, workoutDays, workoutStartTime, workoutEndTime, durationInSeconds } = req.body;
+
   try {
-    const metrics = await db.collection('workout_metrics').insertOne({
+    // Convert string values to numbers if necessary.
+    const metrics = new WorkoutMetrics({
       userId,
-      workoutDays: Array.from(workoutDays), // Ensure it's an array
-      workoutStartTime,
-      workoutEndTime,
-      durationInSeconds,
-      dateLogged: new Date()
+      workoutDays,
+      workoutStartTime: parseInt(workoutStartTime),
+      workoutEndTime: parseInt(workoutEndTime),
+      durationInSeconds: parseFloat(durationInSeconds)
     });
-    res.status(201).json(metrics);
+
+    const savedMetrics = await metrics.save();
+    res.status(201).json(savedMetrics);
   } catch (error) {
     console.error('Error saving workout metrics:', error);
     res.status(500).send('Failed to save workout metrics');
+  }
+});
+
+app.get('/api/workout-days/:email', async (req, res) => {
+  try {
+    const email = req.params.email;
+    const startOfWeek = moment().startOf('week').toDate();
+    const endOfWeek = moment().endOf('week').toDate();
+
+    const workouts = await WorkoutMetrics.find({
+      userId: email,
+      dateLogged: { $gte: startOfWeek, $lte: endOfWeek }
+    }).sort({ dateLogged: 1 }); // Sort by dateLogged ascending
+
+    const workoutDays = workouts.map(w => moment(w.dateLogged).format('dd')); // Returns ['Mo', 'Tu', ...]
+    res.json([...new Set(workoutDays)]); // Return unique days only
+  } catch (error) {
+    console.error('Error retrieving workout days:', error);
+    res.status(500).json({ message: 'Error retrieving workout days' });
   }
 });
 
