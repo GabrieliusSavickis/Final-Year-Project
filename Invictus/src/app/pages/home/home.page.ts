@@ -23,9 +23,11 @@ export class HomePage {
   workoutTimer: any;
   workoutDurationInSeconds = 0;
   displayTime = '00:00:00';
+  lastResetDay: number = moment().dayOfYear();
 
   todaysWorkout$ = this.workoutService.todaysWorkout$;
   currentDayIndex$ = this.workoutService.currentDayIndex$;
+
 
   private authSubscription?: Subscription;
 
@@ -54,6 +56,9 @@ export class HomePage {
     }, error => {
       console.error('Error fetching workout plan:', error);
     });
+
+    // Check if a reset is needed every time the component is loaded.
+    this.checkAndResetWeeklyWorkout();
   }
 
   ngOnDestroy(): void {
@@ -72,13 +77,14 @@ export class HomePage {
     if (this.isWorkoutStarted) {
       this.workoutStartTime = Date.now(); // Record start time
       this.startTimer();
-      this.workoutDays.add(moment().format('ddd')); // Use 'ddd' for unique three-letter day abbreviations
+      this.workoutDays.add(moment().format('dd')); // Use 'ddd' for unique three-letter day abbreviations
+      console.log(this.workoutDays);
+      this.changeDetectorRef.detectChanges();
     } else {
       const workoutEndTime = Date.now();
       const durationInSeconds = (workoutEndTime - this.workoutStartTime) / 1000;
       this.stopTimer();
       this.saveWorkoutMetrics(Array.from(this.workoutDays), this.workoutStartTime, workoutEndTime, durationInSeconds);
-      this.workoutDays.clear(); // Optionally clear the set after saving
     }
   }
 
@@ -132,6 +138,24 @@ export class HomePage {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     return `${hours}h ${minutes}m`;
+  }
+
+  checkAndResetWeeklyWorkout() {
+    const today = moment();
+    const isStartOfWeek = today.day() === 1; // Checks if it's Monday
+    const alreadyReset = today.dayOfYear() === this.lastResetDay;
+  
+    if (isStartOfWeek && !alreadyReset) {
+      this.resetWeeklyWorkout();
+      this.lastResetDay = today.dayOfYear(); // Update the last reset day
+    }
+  }
+
+  resetWeeklyWorkout() {
+    this.workoutDays.clear();
+    this.overallWorkoutTime = 0; // Reset the overall workout time or any other weekly data
+    this.changeDetectorRef.detectChanges();
+    // Save or update this information in the backend if needed
   }
 
   
