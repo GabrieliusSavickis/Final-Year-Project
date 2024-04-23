@@ -94,34 +94,29 @@ def fetch_user_preferences(email):
         if client:
             client.close()
 
-def create_workout_plan(user_preferences, df):
+def create_workout_plan(user_preferences, df, exercises_per_day=6):
     goal = user_preferences['goal']
     fitness_level = user_preferences['fitnessLevel']
     days = int(user_preferences['workoutDays'])
 
     if goal == "loseWeight":
-        return create_cardio_plan(df, days, fitness_level)
+        return create_cardio_plan(df, days, fitness_level, exercises_per_day)
     else:
-        return create_strength_plan(df, goal, fitness_level, days)
+        return create_strength_plan(df, goal, fitness_level, days, exercises_per_day)
 
-def create_cardio_plan(df, days, fitness_level):
-    # Convert fitness level to an index: beginner (0), intermediate (1), advanced (2)
+def create_cardio_plan(df, days, fitness_level, exercises_per_day=6):
     fitness_level_map = {"beginner": 0, "intermediate": 1, "advanced": 2}
     level_index = fitness_level_map.get(fitness_level, 0)
 
-    # Filter for cardio exercises that match the user's fitness level
     cardio_df = df[(df['Type_Cardio'] == 1) & (df['Level'] == level_index)]
-    exercises_per_day = 6  # Always 6 exercises per day
 
     selected_exercises = []
     for day in range(1, days + 1):
         day_exercises = {'Day': day, 'Exercises': []}
         
         if len(cardio_df) < exercises_per_day:
-            # If there are fewer cardio exercises available than required per day, allow replacement
             indices = np.random.choice(cardio_df.index, size=exercises_per_day, replace=True)
         else:
-            # If sufficient exercises are available, prefer no replacement but allow if necessary
             indices = np.random.choice(cardio_df.index, size=exercises_per_day, replace=False)
 
         for idx in indices:
@@ -203,6 +198,25 @@ def update_user_details():
         create_or_update_weight_log(email, weight)
 
     return jsonify({"status": "success"}), 200
+
+@app.route('/api/adjust-intensity', methods=['POST'])
+def adjust_intensity():
+    data = request.get_json()
+    email = data.get('email')
+    increase = data.get('increaseIntensity', False)
+    
+    user_preferences = fetch_user_preferences(email)
+    if not user_preferences:
+        return jsonify({"error": "User preferences not found"}), 404
+    
+    exercises_per_day = 8 if increase else 6  # Adjust number of exercises per day based on user choice
+
+    # Generate a new workout plan with adjusted intensity
+    workout_plan_df = create_workout_plan(user_preferences, df, exercises_per_day)
+    cleaned_workout_plan = clean_up_exercises(workout_plan_df)
+    save_workout_plan_to_mongodb(cleaned_workout_plan, email, user_preferences['goal'], user_preferences['fitnessLevel'])
+    
+    return jsonify({"message": "Workout intensity updated", "plan": cleaned_workout_plan}), 200
 
 def update_user_data(email, data):
     client = MongoClient('<your-mongodb-connection-string>')

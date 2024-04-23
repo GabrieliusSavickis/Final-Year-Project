@@ -113,10 +113,16 @@ export class TrainerPage implements OnInit, OnDestroy{
   }
 
 
-increaseIntensity() {
-  // Logic to increase the workout intensity
-  // This may involve calling an API endpoint that updates the workout plan
-}
+  increaseIntensity() {
+    const intensityData = {
+      email: this.userEmail,
+      increaseIntensity: true
+    };
+    this.httpClient.post('http://localhost:5000/api/adjust-intensity', intensityData).subscribe({
+      next: (response) => console.log('Intensity increased:', response),
+      error: (error) => console.error('Error increasing intensity:', error)
+    });
+  }
 
 keepIntensity() {
   // Logic to acknowledge the user's choice
