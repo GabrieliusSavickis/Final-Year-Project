@@ -302,7 +302,9 @@ app.get('/api/monthly-workout-summary', async (req, res) => {
       {
         $group: {
           _id: { $dayOfMonth: '$dateLogged' }, // Group by day of the month
-          totalDuration: { $sum: '$durationInSeconds' } // Calculate total duration for each day
+          totalDuration: { $sum: '$durationInSeconds' }, // Calculate total duration for each day
+          averageStartTime: { $avg: '$workoutStartTime' },
+          averageEndTime: { $avg: '$workoutEndTime' },
         }
       },
       {
@@ -310,8 +312,16 @@ app.get('/api/monthly-workout-summary', async (req, res) => {
       }
     ]);
 
-    console.log("Monthly workout summary data:", result); // Log the retrieved data
-    res.json(result);
+    // Map the results to include the calculated average workout time.
+    const enhancedResults = result.map(day => {
+      const averageDuration = (day.averageEndTime - day.averageStartTime) / 1000;
+      return {
+        ...day,
+        averageDuration: isNaN(averageDuration) ? 0 : averageDuration
+      };
+    });
+
+    res.json(enhancedResults);
   } catch (error) {
     console.error('Error retrieving monthly workout summary:', error);
     res.status(500).json({ message: 'Error retrieving monthly workout summary' });

@@ -8,6 +8,7 @@ import { interval, Subscription } from 'rxjs';
 interface WorkoutSummary {
   _id: number;
   totalDuration: number;
+  averageDuration: number;
 }
 
 @Component({
@@ -20,6 +21,9 @@ export class AdminPage implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('chartCanvas') chartCanvas!: ElementRef<HTMLCanvasElement>;
   private chart!: Chart;
   private updateSubscription!: Subscription;
+
+  @ViewChild('averageChartCanvas') averageChartCanvas!: ElementRef<HTMLCanvasElement>;
+  private averageChart!: Chart;
 
   constructor(public auth: AuthService, private router: Router, private http: HttpClient) { }
 
@@ -43,6 +47,9 @@ export class AdminPage implements OnInit, OnDestroy, AfterViewInit {
     if (this.chart) {
       this.chart.destroy();
     }
+    if (this.averageChart) {
+      this.averageChart.destroy();
+    }
   }
 
   createChart(labels: string[], data: number[]) {
@@ -55,8 +62,8 @@ export class AdminPage implements OnInit, OnDestroy, AfterViewInit {
       datasets: [{
         label: 'Daily Workout Time (hours)',
         data: data,
-        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-        borderColor: 'rgba(255, 99, 132, 1)',
+        backgroundColor: 'rgba(75, 192, 192, 1)',
+        borderColor: 'rgba(75, 192, 192, 1)',
         borderWidth: 1
       }]
     };
@@ -76,11 +83,42 @@ export class AdminPage implements OnInit, OnDestroy, AfterViewInit {
     this.chart = new Chart(this.chartCanvas.nativeElement.getContext('2d')!, config);
   }
 
+  createAverageChart(labels: string[], averageDurations: number[]) {
+    const data = {
+      labels: labels,
+      datasets: [{
+        label: 'Average Workout Time (seconds)',
+        data: averageDurations,
+        fill: false,
+        borderColor: 'rgb(75, 192, 192)',
+        tension: 0.1
+      }]
+    };
+
+    const config = {
+      type: 'line' as ChartType,
+      data: data,
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    };
+
+    this.averageChart = new Chart(this.averageChartCanvas.nativeElement.getContext('2d')!, config);
+  }
+
   loadMonthlyWorkoutSummary() {
     this.http.get<WorkoutSummary[]>('http://localhost:3000/api/monthly-workout-summary').subscribe(data => {
       const labels = data.map(item => `Day ${item._id}`);
       const durations = data.map(item => item.totalDuration / 3600); // Convert seconds to hours
       this.createChart(labels, durations);
+
+      const averageDurations = data.map(item => item.averageDuration);
+      this.createAverageChart(labels, averageDurations);
+
     }, error => {
       console.error('Failed to fetch workout summary:', error);
     });
