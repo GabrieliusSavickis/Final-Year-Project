@@ -286,6 +286,38 @@ app.post('/api/log-workout-completion', async (req, res) => {
   }
 });
 
+// Define a new route to fetch the monthly workout summary data
+app.get('/api/monthly-workout-summary', async (req, res) => {
+  console.log("Request received for monthly workout summary");
+  try {
+    const startOfMonth = moment().startOf('month').toDate();
+    const endOfMonth = moment().endOf('month').toDate();
+
+    const result = await WorkoutMetrics.aggregate([
+      {
+        $match: {
+          dateLogged: { $gte: startOfMonth, $lte: endOfMonth }
+        }
+      },
+      {
+        $group: {
+          _id: { $dayOfMonth: '$dateLogged' }, // Group by day of the month
+          totalDuration: { $sum: '$durationInSeconds' } // Calculate total duration for each day
+        }
+      },
+      {
+        $sort: { _id: 1 } // Sort by day of the month
+      }
+    ]);
+
+    console.log("Monthly workout summary data:", result); // Log the retrieved data
+    res.json(result);
+  } catch (error) {
+    console.error('Error retrieving monthly workout summary:', error);
+    res.status(500).json({ message: 'Error retrieving monthly workout summary' });
+  }
+});
+
 
 // Define the job to check workout plan adjustments
 cron.schedule('*/2 * * * *', async () => {

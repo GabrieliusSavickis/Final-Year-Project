@@ -32,8 +32,8 @@ export class HomePage {
 
   private authSubscription?: Subscription;
 
-  constructor(public auth: AuthService, 
-    private router: Router, 
+  constructor(public auth: AuthService,
+    private router: Router,
     private workoutService: WorkoutService,
     private changeDetectorRef: ChangeDetectorRef,
     private httpClient: HttpClient) {
@@ -62,7 +62,7 @@ export class HomePage {
 
     // Check if a reset is needed every time the component is loaded.
     this.checkAndResetWeeklyWorkout();
-    
+
   }
 
   ngOnDestroy(): void {
@@ -77,7 +77,7 @@ export class HomePage {
 
   toggleWorkout() {
     this.isWorkoutStarted = !this.isWorkoutStarted;
-  
+
     if (this.isWorkoutStarted) {
       this.workoutStartTime = Math.floor(Date.now()); // Record start time
       this.startTimer();
@@ -104,9 +104,9 @@ export class HomePage {
   }
 
   saveWorkoutMetrics(
-    workoutDays: string[], 
-    workoutStartTime: number, 
-    workoutEndTime: number, 
+    workoutDays: string[],
+    workoutStartTime: number,
+    workoutEndTime: number,
     durationInSeconds: number,
   ): void {
     const metricsData = {
@@ -116,14 +116,14 @@ export class HomePage {
       workoutEndTime,
       durationInSeconds,
     };
-  
+
     this.httpClient.post('http://localhost:3000/api/workout-metrics', metricsData).subscribe({
-    next: (response) => {
-      console.log('Workout metrics saved:', response);
-    },
-    error: (error) => console.error('Error saving workout metrics:', error)
-  });
-}
+      next: (response) => {
+        console.log('Workout metrics saved:', response);
+      },
+      error: (error) => console.error('Error saving workout metrics:', error)
+    });
+  }
 
   updateDisplayTime() {
     const hours = Math.floor(this.workoutDurationInSeconds / 3600);
@@ -147,7 +147,7 @@ export class HomePage {
     const today = moment();
     const isStartOfWeek = today.day() === 1; // Checks if it's Monday
     const alreadyReset = today.dayOfYear() === this.lastResetDay;
-  
+
     if (isStartOfWeek && !alreadyReset) {
       this.resetWeeklyWorkout();
       this.lastResetDay = today.dayOfYear(); // Update the last reset day
@@ -187,9 +187,9 @@ export class HomePage {
       });
   }
 
-  
+
   logout() {
     this.auth.logout({ returnTo: `${window.location.origin}/login` } as LogoutOptions);
   }
-  
+
 }

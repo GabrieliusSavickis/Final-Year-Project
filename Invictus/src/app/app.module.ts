@@ -10,11 +10,12 @@ import { IonicStorageModule } from '@ionic/storage-angular';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { TabsComponent } from './tabs/tabs.component';
+import { NgChartsModule } from 'ng2-charts';
 
 
 @NgModule({
   declarations: [AppComponent, TabsComponent],
-  imports: [BrowserModule , IonicModule.forRoot(), AppRoutingModule, HttpClientModule, FormsModule, 
+  imports: [BrowserModule, NgChartsModule, IonicModule.forRoot(), AppRoutingModule, HttpClientModule, FormsModule, 
   // Import the module into the application, with configuration
   AuthModule.forRoot({
     domain: 'dev-jzak5ybyhpmswbfo.us.auth0.com',
