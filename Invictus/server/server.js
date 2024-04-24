@@ -186,7 +186,7 @@ const workoutMetricsSchema = new mongoose.Schema({
 const WorkoutMetrics = mongoose.model('WorkoutMetrics', workoutMetricsSchema);
 
 app.post('/api/workout-metrics', async (req, res) => {
-  const { userId, workoutDays, workoutStartTime, workoutEndTime, durationInSeconds, weeklyWorkoutTimeInSeconds } = req.body;
+  const { userId, workoutDays, workoutStartTime, workoutEndTime, durationInSeconds} = req.body;
 
   try {
     // Convert string values to numbers if necessary.
@@ -196,7 +196,6 @@ app.post('/api/workout-metrics', async (req, res) => {
       workoutStartTime: parseInt(workoutStartTime),
       workoutEndTime: parseInt(workoutEndTime),
       durationInSeconds: parseFloat(durationInSeconds),
-      weeklyWorkoutTimeInSeconds: parseFloat(weeklyWorkoutTimeInSeconds)
     });
 
     const savedMetrics = await metrics.save();
