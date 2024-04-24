@@ -78,20 +78,5 @@ logout() {
   this.auth.logout({ returnTo: `${window.location.origin}/login` } as LogoutOptions);
 }
 
- // Properties for the chart
- public pieChartOptions: ChartOptions = {
-  responsive: true,
-  // Add any additional options here
-};
-public pieChartLabels: string[] = ['Carbs', 'Protein', 'Fat'];
-public pieChartData: ChartData<'pie', number[], string> = {
-  labels: this.pieChartLabels,
-  datasets: [{
-    data: [45, 25, 30], // Example data, replace with real data
-    backgroundColor: ['blue', 'green', 'red'], // Add your colors
-    hoverBackgroundColor: ['lightblue', 'lightgreen', 'lightcoral']
-  }]
-};
-public pieChartType: ChartType = 'pie';
-public pieChartLegend = false;
+
 }

@@ -81,27 +81,5 @@
       </ion-card-content>
     </ion-card>
 
-    <ion-card class="macro-plan">
-      <ion-card-header>
-        <ion-card-title>Current Meal Plan</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="chart-and-legend-container">
-          <div class="chart-container">
-            <canvas baseChart
-              [data]="pieChartData"
-              [type]="pieChartType"
-              [options]="pieChartOptions"
-              [labels]="pieChartLabels"
-              [legend]="pieChartLegend">
-            </canvas>
-          </div>
-          <div class="chart-legend">
-            <p><span class="legend-color-box carbs"></span>Carbs: 45%</p>
-            <p><span class="legend-color-box protein"></span>Protein: 25%</p>
-            <p><span class="legend-color-box fat"></span>Fat: 30%</p>
-          </div>
-        </div>
-      </ion-card-content>
-    </ion-card>
+    
   </ion-content>
