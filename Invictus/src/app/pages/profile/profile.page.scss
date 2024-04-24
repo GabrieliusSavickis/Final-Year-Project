@@ -1,88 +1,128 @@
-.profile-header {
-    display: flex;
-    align-items: center;
-    padding: 15px;
-  }
+ion-content {
+  --background: #f2f2f7;
+}
 
-  .profile-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin: 15px;
-    padding: 15px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); // Optional shadow for depth
-  }
-  
-  .profile-picture {
-    --border-radius: 50%;
-    margin: 0 auto; // Centers the avatar if the column is auto-sized
-  }  
-  
-  .profile-details {
-    flex: 1;
-    h2 {
-      margin-bottom: 5px;
-    }
-  }
+ion-header {
+  --background: #ffffff;
+}
 
-  ion-card-content {
-    h2 {
-      font-size: 1.5em;
-      font-weight: bold;
-      margin-bottom: 0.5em;
-    }
-  
-    p {
-      font-size: 1em;
-      color: #666; // A softer color for the email text
-    }
-  }
+ion-toolbar {
+  --min-height: 50px;
+}
 
-  .workout-plan {
-    ion-card-title {
-      text-align: center;
-      font-size: 1.2rem;
-      font-weight: bold;
-    }
-  
-    ion-item-divider {
-      --background: #ddd; // Use a distinct background for day dividers
-      --padding-start: 10px; // Adjust padding as needed
-    }
-  
-    ion-label {
-      font-size: 1rem;
-    }
-  }
+ion-title {
+  text-align: center;
+  font-size: 1.5em;
+  font-weight: bold;
+}
 
-  .chart-and-legend-container {
-    display: flex;
-    align-items: center;
-  }
-  
-  .chart-container {
-    flex: 0 0 auto; // Do not grow or shrink
-    width: 50%; // Adjust the width as needed
-    height: auto; // Adjust the height as needed
-  }
-  
-  .chart-legend {
-    flex: 1; // Take up the remaining space
-    margin-left: 20px; // Space between chart and legend text
-    p {
-      display: flex;
-      align-items: center;
-      margin: 4px 0; // Space between legend items
-      .legend-color-box {
-        width: 20px; // Adjust the size as needed
-        height: 20px; // Adjust the size as needed
-        display: inline-block;
-        margin-right: 10px; // Space between color box and text
-      }
-      .carbs { background-color: blue; }
-      .protein { background-color: green; }
-      .fat { background-color: red; }
-    }
-  }
-  
+.profile-card {
+  margin: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.profile-picture {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 15px;
+}
+
+.profile-details {
+  text-align: center;
+}
+
+h2 {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin: 5px 0;
+}
+
+p {
+  font-size: 1em;
+  color: #666;
+}
+
+.workout-plan,
+.macro-plan {
+  margin: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+ion-card-title {
+  text-align: center;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+ion-item-divider {
+  background-color: #ddd;
+  padding-start: 10px;
+}
+
+ion-label {
+  font-size: 1em;
+}
+
+.chart-and-legend-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 15px;
+}
+
+.chart-container {
+  flex: 1;
+  min-width: 200px;
+}
+
+.chart-legend {
+  flex: 1;
+  padding: 15px;
+}
+
+.legend-color-box {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.carbs {
+  background-color: #007bff;
+}
+
+.protein {
+  background-color: #28a745;
+}
+
+.fat {
+  background-color: #dc3545;
+}
+
+/* Add some padding for ion-items in the form */
+ion-item {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+}
+
+/* Styles for the save profile button */
+ion-button {
+  margin-top: 15px;
+  --background: #4CAF50;
+  --background-activated: #43A047;
+  --background-hover: #43A047;
+  --background-focused: #43A047;
+  --border-radius: 20px;
+  --height: 50px;
+  font-size: 1em;
+  color: white;
+}
+
+/* Remove the border of the ion-item when it is focused */
+ion-item::part(native) {
+  border: none;
+}
