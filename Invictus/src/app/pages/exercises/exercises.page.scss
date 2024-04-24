@@ -1,8 +1,63 @@
+/* General styles */
+ion-content {
+  --background: #f2f2f7; /* Set a light background similar to iOS */
+}
+
+ion-header {
+  --background: #ffffff; /* White header background */
+}
+
+ion-toolbar {
+  --min-height: 50px; /* Compact toolbar height */
+}
+
+ion-title {
+  text-align: center; /* Center the title */
+  font-size: 1.5em; /* Make the title larger */
+  font-weight: bold; /* Bold title text */
+}
+
+/* Card styles */
+ion-card {
+  margin: 10px;
+  border-radius: 10px; /* Rounded corners */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+ion-card-header {
+  background: #ffffff; /* White background for the card header */
+  border-bottom: 1px solid #dcdcdc; /* Line to separate header from content */
+  font-size: 1.2em; /* Larger font size for header */
+}
+
+ion-card-content {
+  background: #ffffff; /* White background for the card content */
+  padding: 15px; /* Padding within the card */
+}
+
 .exercise-image {
-    
-    object-fit: cover; /* Preserve the aspect ratio and fill the container */
+  width: 100%; /* Full width images */
+  height: 150px; /* Fixed height for consistent sizing */
+  object-fit: cover; /* Cover the card area without stretching */
+  border-top-left-radius: 10px; /* Rounded top corners */
+  border-top-right-radius: 10px; /* Rounded top corners */
+}
+
+/* List and items styles */
+ion-list {
+  padding: 0; /* Remove default padding */
+}
+
+ion-item {
+  --background: #ffffff; /* White background for list items */
+  --border-color: transparent; /* No borders between items */
+  --padding-start: 0; /* Align text with card title */
+  --min-height: 50px; /* Consistent item height */
+  font-size: 1em; /* Font size for list items */
+  color: #333; /* Text color for items */
+  transition: background-color 0.3s; /* Smooth background transition */
+
+  &:hover {
+    background-color: #e8e8e8; /* Hover effect for list items */
   }
-  
-  ion-card {
-    margin-bottom: 10px; /* Add spacing between cards */
-  }
+}
