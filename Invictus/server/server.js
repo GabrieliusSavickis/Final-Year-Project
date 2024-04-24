@@ -287,44 +287,58 @@ app.post('/api/log-workout-completion', async (req, res) => {
 });
 
 // Define a new route to fetch the monthly workout summary data
-app.get('/api/monthly-workout-summary', async (req, res) => {
-  console.log("Request received for monthly workout summary");
+app.get('/api/weekly-workout-summary', async (req, res) => {
+  console.log("Request received for weekly workout summary");
   try {
-    const startOfMonth = moment().startOf('month').toDate();
-    const endOfMonth = moment().endOf('month').toDate();
+    const startOfWeek = moment().startOf('isoWeek').toDate();
+    const endOfWeek = moment().endOf('isoWeek').toDate();
 
     const result = await WorkoutMetrics.aggregate([
       {
         $match: {
-          dateLogged: { $gte: startOfMonth, $lte: endOfMonth }
+          dateLogged: { $gte: startOfWeek, $lte: endOfWeek }
+        }
+      },
+      {
+        $project: {
+          dayOfWeek: { $dayOfWeek: '$dateLogged' },
+          durationInSeconds: 1,
+          workoutStartTime: { $toLong: "$workoutStartTime" },
+          workoutEndTime: { $toLong: "$workoutEndTime" }
         }
       },
       {
         $group: {
-          _id: { $dayOfMonth: '$dateLogged' }, // Group by day of the month
-          totalDuration: { $sum: '$durationInSeconds' }, // Calculate total duration for each day
+          _id: '$dayOfWeek',
+          totalDuration: { $sum: '$durationInSeconds' },
           averageStartTime: { $avg: '$workoutStartTime' },
           averageEndTime: { $avg: '$workoutEndTime' },
         }
       },
       {
-        $sort: { _id: 1 } // Sort by day of the month
+        $sort: { _id: 1 }
       }
     ]);
 
-    // Map the results to include the calculated average workout time.
+    // Map the results to include the calculated average workout time and convert day numbers to names
+    const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const enhancedResults = result.map(day => {
+      console.log(`Raw start and end times: ${day.averageStartTime}, ${day.averageEndTime}`); // Add this line
       const averageDuration = (day.averageEndTime - day.averageStartTime) / 1000;
-      return {
-        ...day,
+      const enhancedDay = {
+        dayOfWeek: dayNames[day._id - 1],
+        totalDuration: day.totalDuration,
         averageDuration: isNaN(averageDuration) ? 0 : averageDuration
       };
+      console.log(`Day: ${enhancedDay.dayOfWeek}, Average Duration: ${enhancedDay.averageDuration}`);
+      return enhancedDay;
     });
 
+    console.log('Enhanced Results:', enhancedResults);
     res.json(enhancedResults);
   } catch (error) {
-    console.error('Error retrieving monthly workout summary:', error);
-    res.status(500).json({ message: 'Error retrieving monthly workout summary' });
+    console.error('Error retrieving weekly workout summary:', error);
+    res.status(500).json({ message: 'Error retrieving weekly workout summary' });
   }
 });
 

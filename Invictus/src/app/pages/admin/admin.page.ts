@@ -16,7 +16,7 @@ interface WorkoutSummary {
   templateUrl: './admin.page.html',
   styleUrls: ['./admin.page.scss'],
 })
-export class AdminPage implements OnInit, OnDestroy, AfterViewInit {
+export class AdminPage implements OnInit, OnDestroy{
 
   @ViewChild('chartCanvas') chartCanvas!: ElementRef<HTMLCanvasElement>;
   private chart!: Chart;
@@ -25,20 +25,19 @@ export class AdminPage implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('averageChartCanvas') averageChartCanvas!: ElementRef<HTMLCanvasElement>;
   private averageChart!: Chart;
 
+  
+
   constructor(public auth: AuthService, private router: Router, private http: HttpClient) { }
 
   ngOnInit() {
-    this.loadMonthlyWorkoutSummary();
+    this.loadWeeklyWorkoutSummary();
     // Polling every 30 seconds
     this.updateSubscription = interval(30000).subscribe(
-      () => this.loadMonthlyWorkoutSummary()
+      () => this.loadWeeklyWorkoutSummary()
     );
   }
 
-  ngAfterViewInit() {
-    // Initialize chart with dummy data
-    this.createChart([], []);
-  }
+ 
 
   ngOnDestroy() {
     if (this.updateSubscription) {
@@ -56,6 +55,8 @@ export class AdminPage implements OnInit, OnDestroy, AfterViewInit {
     if (this.chart) {
       this.chart.destroy(); // Destroy existing chart instance if exists
     }
+
+   
 
     const chartData = {
       labels: labels,
@@ -83,7 +84,9 @@ export class AdminPage implements OnInit, OnDestroy, AfterViewInit {
     this.chart = new Chart(this.chartCanvas.nativeElement.getContext('2d')!, config);
   }
 
+
   createAverageChart(labels: string[], averageDurations: number[]) {
+    
     const data = {
       labels: labels,
       datasets: [{
@@ -110,15 +113,19 @@ export class AdminPage implements OnInit, OnDestroy, AfterViewInit {
     this.averageChart = new Chart(this.averageChartCanvas.nativeElement.getContext('2d')!, config);
   }
 
-  loadMonthlyWorkoutSummary() {
-    this.http.get<WorkoutSummary[]>('http://localhost:3000/api/monthly-workout-summary').subscribe(data => {
-      const labels = data.map(item => `Day ${item._id}`);
-      const durations = data.map(item => item.totalDuration / 3600); // Convert seconds to hours
+
+  loadWeeklyWorkoutSummary() {
+    this.http.get<any[]>('http://localhost:3000/api/weekly-workout-summary').subscribe(data => {
+      const labels = data.map(item => item.dayOfWeek); // Use the day names as labels
+      const durations = data.map(item => item.totalDuration / 3600); // Convert seconds to hours for the chart
+      const averageDurations = data.map(item => item.averageDuration / 60); // Convert seconds to minutes for the average
+  
+      // Update the bar chart for total workout durations
       this.createChart(labels, durations);
-
-      const averageDurations = data.map(item => item.averageDuration);
+  
+      // Update the line chart for average workout durations
       this.createAverageChart(labels, averageDurations);
-
+  
     }, error => {
       console.error('Failed to fetch workout summary:', error);
     });
