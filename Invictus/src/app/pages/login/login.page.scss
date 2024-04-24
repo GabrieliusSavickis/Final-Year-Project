@@ -1,0 +1,90 @@
+/* login.page.css */
+ion-content {
+  --background: none;
+  --ion-background-color: transparent;
+}
+
+
+.login-container {
+    background-image: url('../../../assets/white-background4.jpg');
+    background-size: cover;
+    background-position: center;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;;
+    padding: 20px;
+  }
+  
+.login-header,
+.login-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo {
+  max-width: 150px;
+  margin-bottom: 20px;
+}
+
+.brand-title {
+  color: #000; /* Black color */
+  font-weight: bold; /* Makes the font bold */
+  font-size: 1.5em; /* Adjusts the size */
+  margin-bottom: 30px;
+  text-align: center; /* Centers the text */
+}
+
+.login-form {
+  width: 100%;
+  max-width: 330px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Add shadow for depth */
+  margin-bottom: 15px;
+}
+
+.login-form .form-control {
+  position: relative;
+  box-sizing: border-box;
+  height: auto;
+  padding: 10px;
+  font-size: 16px;
+}
+
+.login-form .btn-block {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  font-size: 18px;
+  border-radius: 20px;
+  margin-top: 10px; /* Add space above the button */
+}
+
+.admin-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  font-size: 18px;
+  border-radius: 20px;
+  background-color: #800080; /* Purple color */
+  color: white;
+  margin-bottom: 10px; /* Separation from next button */
+  border: none; /* Removes the border */
+}
+
+.user-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  font-size: 18px;
+  border-radius: 20px;
+  background-color: #ff1f1f; /* Bright red color */
+  color: white;
+  border: none; /* Removes the border */
+}
+  

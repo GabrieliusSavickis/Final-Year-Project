@@ -1,18 +1,20 @@
-<ion-content>
-    <div style="display: flex; justify-content: center; align-items: center; height: 50%;">
-      <ion-button (click)="auth.loginWithRedirect()">Login</ion-button>
+<ion-content class="ion-padding">
+  <div class="login-container">
+    <div class="login-header">
+      <img src="assets/invictus-logo.png" alt="Invictus Logo" class="logo">
+      <h2 class="brand-title">Personalised Training</h2>
     </div>
-    <div style="display: flex; justify-content: center; align-items: center; height: 50%;">
-      <form (ngSubmit)="adminLogin()">
-        <ion-item>
-          <ion-label position="floating">Username</ion-label>
-          <ion-input type="text" [(ngModel)]="adminUsername" name="adminUsername"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="floating">Password</ion-label>
-          <ion-input type="password" [(ngModel)]="adminPassword" name="adminPassword"></ion-input>
-        </ion-item>
-        <ion-button type="submit" expand="block">Admin Login</ion-button>
+    <div class="login-body">
+      <form class="login-form" (ngSubmit)="adminLogin()">
+        <div class="mb-3">
+          <input type="text" class="form-control" placeholder="Username" [(ngModel)]="adminUsername" name="adminUsername">
+        </div>
+        <div class="mb-3">
+          <input type="password" class="form-control" placeholder="Password" [(ngModel)]="adminPassword" name="adminPassword">
+        </div>
+        <button type="submit" class="btn admin-btn">Admin</button>
       </form>
+      <button (click)="auth.loginWithRedirect()" class="btn btn-secondary btn-block user-btn">User</button>
     </div>
-  </ion-content>
+  </div>
+</ion-content>
