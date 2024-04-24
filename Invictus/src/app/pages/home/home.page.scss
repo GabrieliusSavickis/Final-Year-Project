@@ -1,146 +1,171 @@
-#container {
+/* General resets for ionic components */
+ion-header,
+ion-toolbar,
+ion-title,
+ion-content,
+ion-card,
+ion-card-header,
+ion-card-title,
+ion-card-content {
+  
+  --padding: 0; /* Removes default padding */
+  --color: #000; /* Sets the default text color to black */
+}
+
+/* Header styling */
+ion-header {
+  background-color: #ffffff; /* Set the background color you want for the header */
+}
+
+/* Toolbar and title alignment */
+ion-toolbar {
+  --min-height: 50px; /* Adjust toolbar height */
+}
+
+ion-title {
   text-align: center;
-
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+  font-size: 1.5em; /* Adjust the font size for the title */
+  font-weight: bold; /* Optional: if you want the title to be bold */
 }
 
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
-}
-
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-
-  color: #8c8c8c;
-
-  margin: 0;
-}
-
-#container a {
-  text-decoration: none;
-}
-
-.calendar-card {
+/* Calendar card styling */
+.calendar-card,
+.timer-container,
+.overall-workout-time-card {
   margin: 10px;
   border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: #f7f7f7; /* Set a white background for consistency */
+  padding: 15px; /* Add some padding */
+  
+}
+
+.workout-container {
+  background: #f7f7f7; /* Set a white background for consistency */
+}
+
+/* Timer container specific styling */
+.timer-container {
+  display: flex;
+  flex-direction: row; /* Stack the time display and button vertically */
+  align-items: center; /* Center align the contents */
+  justify-content: space-evenly; /* Center content vertically */
+  margin-top: 20px; /* Provide some margin at the top */
 }
 
 .week-number {
   text-align: center;
   font-size: 1.2em;
   font-weight: bold;
-  margin-top: 10px;
+  color: #333; /* Set text color */
 }
 
 .week-days {
   display: flex;
   justify-content: space-between;
-  padding: 10px;
   margin: 10px 0;
-  background-color: #f2f2f2;
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .day {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 5px;
   border-radius: 50%;
   width: 30px;
   height: 30px;
-  line-height: 30px; // Vertically center the text
   font-weight: bold;
-  color: #535353; // Default text color
+  color: #535353;
 }
 
 .workout-day {
-  color: #4CAF50; /* Green background for workout days */
+  background-color: #4CAF50; /* Green background for workout days */
+  color: white;
 }
 
-.timer-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #f2f2f2;
-  padding: 10px;
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin: 10px;
-}
 
-.timer-display {
-  font-size: 1.5em;
-  font-weight: bold;
-  color: #333;
-}
 
 .start-stop-button {
   padding: 10px 20px;
   font-size: 1em;
   border: none;
-  border-radius: 5px;
-  background-color: #4CAF50; // Green background for start
-  color: white;
+  border-radius: 20px;
+  background-color: #4CAF50; /* Green background */
   cursor: pointer;
-  transition: background-color 0.3s;
-
-  &.stop {
-    background-color: #f44336; // Red background for stop
-  }
 }
 
-.sample-workout {
-  margin: 0px;
-  
+.start-stop-button.stop {
+  background-color: #f44336; /* Red background */
 }
 
-.workout-card {
-  border-radius: 10px;
-  
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: 100%; /* Set the same width as the timer container */
-}
-
-ion-card-header {
-  font-weight: bold;
-}
-
-ion-card-content {
-  ul {
-    list-style: none;
-    padding: 0;
-  }
-
-  li {
-    margin: 5px 0;
-  }
-}
-
-
-.time-display {
-  font-size: 2em;
-  font-weight: bold;
-  text-align: center;
-  color: #333;
-}
-
+/* Workout time card */
 .overall-workout-time-card {
   margin: 10px;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-ion-card-header ion-card-title {
+.overall-time-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   text-align: center;
-  display: block; /* Ensures that the title spans the full width inside the header */
 }
 
+ion-card-header ion-card-title {
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
+.timer-display {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #333;
+  
+}
+
+.overall-timer-display {
+  font-size: 2em; /* Larger font size for better visibility */
+  font-weight: bold;
+  color: #333; /* Dark text for contrast */
+  padding: 15px; /* Padding for spacing */
+  background: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
+  border-radius: 10px; /* Rounded corners for the display */
+  width: 100%; /* Full width of the container */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.05); /* Subtle shadow for depth */
+}
+
+/* Apply smooth transitions to background-color changes */
+.start-stop-button,
+.workout-day {
+  transition: background-color 0.3s ease;
+}
+
+/* Sample workout card style */
+.sample-workout {
+  margin: 0;
+}
+
+ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+li {
+  margin: 5px 0;
+}
+
+/* Ensure the logout button is visible and styled */
+ion-buttons {
+  color: #000; /* Adjust the color as needed */
+}
+
+ion-button {
+  --background: transparent; /* Makes the button background transparent */
+  --background-activated: transparent; /* No background change on activation */
+  --background-hover: transparent; /* No background change on hover */
+  --background-focused: transparent; /* No background change on focus */
+}
+
+ion-icon {
+  color: #000; /* Set icon color */
+}
