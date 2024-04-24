@@ -1,0 +1,100 @@
+ion-content {
+    --background: #f2f2f7;
+  }
+  
+  ion-header {
+    --background: #ffffff;
+  }
+  
+  ion-toolbar {
+    --min-height: 50px;
+  }
+  
+  ion-title {
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: bold;
+  }
+  
+  .reminder,
+  .suggestion {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px;
+    padding: 10px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: #333;
+  }
+  
+  .reminder ion-icon,
+  .suggestion ion-icon {
+    margin-right: 8px;
+    font-size: 1.2em;
+  }
+  
+  ion-list {
+    margin: 0;
+    padding: 0;
+  }
+  
+  ion-item {
+    --background: #ffffff;
+    --padding-start: 16px; /* Adjusted padding on the left */
+    --inner-padding-end: 16px; /* Consistent padding on the right */
+    --border-color: #dcdcdc;
+    --border-radius: 8px; /* Rounded corners */
+    --min-height: 50px;
+    --padding-top: 8px; /* Reduced padding on top */
+    --padding-bottom: 8px; /* Reduced padding on bottom */
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Light shadow for depth */
+  }
+  
+  ion-label {
+    font-size: 1em;
+    color: #333;
+  }
+  
+  ion-input,
+  ion-select {
+    --padding-start: 0;
+    --placeholder-color: #888;
+    --placeholder-font-style: italic;
+  }
+  
+  ion-button {
+    margin-top: 15px;
+    --background: #4CAF50;
+    --background-activated: #43A047;
+    --background-hover: #43A047;
+    --background-focused: #43A047;
+    --border-radius: 20px;
+    --height: 50px;
+    font-size: 1em;
+    color: white;
+  }
+  
+  ion-button[type="button"] {
+    --background: #2196F3;
+  }
+  
+  /* Additional styles for the yes/no buttons */
+  .yes-button {
+    --background: #4CAF50;
+  }
+  
+  .no-button {
+    --background: #f44336;
+  }
+  
+  /* Style for form container to have some spacing */
+  .form-container {
+    padding: 6px;
+    background-color: #ffffff;
+    border-radius: 10px; /* Rounded corners for the form */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow for depth */
+  }
+  
