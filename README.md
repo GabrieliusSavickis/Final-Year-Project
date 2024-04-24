@@ -15,3 +15,6 @@ pip install flask_cors
 npm install node-cron
 npm install moment-timezone
 
+npm install bootstrap
+
+
