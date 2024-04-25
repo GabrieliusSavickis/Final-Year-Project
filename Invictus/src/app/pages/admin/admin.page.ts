@@ -53,11 +53,14 @@ export class AdminPage implements OnInit, OnDestroy{
 
   createChart(labels: string[], data: number[]) {
     if (this.chart) {
-      this.chart.destroy(); // Destroy existing chart instance if exists
+      this.chart.destroy(); // Ensure the chart is destroyed
     }
-
-   
-
+  
+    const context = this.chartCanvas.nativeElement.getContext('2d');
+    if (!context) {
+      return; // Guard against null context
+    }
+  
     const chartData = {
       labels: labels,
       datasets: [{
@@ -68,7 +71,7 @@ export class AdminPage implements OnInit, OnDestroy{
         borderWidth: 1
       }]
     };
-
+  
     const config = {
       type: 'bar' as ChartType,
       data: chartData,
@@ -80,13 +83,22 @@ export class AdminPage implements OnInit, OnDestroy{
         }
       }
     };
-
-    this.chart = new Chart(this.chartCanvas.nativeElement.getContext('2d')!, config);
+  
+    requestAnimationFrame(() => { // Use requestAnimationFrame to avoid errors
+      this.chart = new Chart(context, config);
+    });
   }
-
-
+  
   createAverageChart(labels: string[], averageDurations: number[]) {
-    
+    if (this.averageChart) {
+      this.averageChart.destroy(); // Ensure the chart is destroyed
+    }
+  
+    const context = this.averageChartCanvas.nativeElement.getContext('2d');
+    if (!context) {
+      return; // Guard against null context
+    }
+  
     const data = {
       labels: labels,
       datasets: [{
@@ -97,7 +109,7 @@ export class AdminPage implements OnInit, OnDestroy{
         tension: 0.1
       }]
     };
-
+  
     const config = {
       type: 'line' as ChartType,
       data: data,
@@ -109,8 +121,10 @@ export class AdminPage implements OnInit, OnDestroy{
         }
       }
     };
-
-    this.averageChart = new Chart(this.averageChartCanvas.nativeElement.getContext('2d')!, config);
+  
+    requestAnimationFrame(() => { // Use requestAnimationFrame to avoid errors
+      this.averageChart = new Chart(context, config);
+    });
   }
 
 
