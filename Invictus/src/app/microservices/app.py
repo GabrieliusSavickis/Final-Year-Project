@@ -27,6 +27,7 @@ def generate_workout_plan():
     # Assuming weight is stored in user preferences
     weight = user_preferences.get('weight', 70)  # default to 70kg if not specified
     nutrition_plan = calculate_nutrition(weight, user_preferences['goal'])
+    save_nutrition_plan_to_mongodb(nutrition_plan, email)
     
     workout_plan_df = create_workout_plan(user_preferences, df)
     cleaned_workout_plan = clean_up_exercises(workout_plan_df)
@@ -207,6 +208,19 @@ def calculate_nutrition(weight, goal):
         "Protein": protein,
         "Fats": fats
     }
+    
+def save_nutrition_plan_to_mongodb(nutrition_plan, user_email):
+    client = MongoClient('mongodb+srv://invictus:invictusfyp@clusterfyp.3lmfd7v.mongodb.net')
+    db = client['Users']
+    nutrition_plans = db['nutrition_plans']
+    
+    nutrition_plans.update_one(
+        {'email': user_email},
+        {'$set': nutrition_plan},
+        upsert=True
+    )
+    client.close()
+    print("Nutrition plan saved for:", user_email)
 
 
 @app.route('/tabs/trainer', methods=['POST'])
