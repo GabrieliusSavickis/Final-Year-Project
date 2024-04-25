@@ -24,11 +24,21 @@ def generate_workout_plan():
     if not user_preferences:
         return jsonify({"error": "User preferences not found"}), 404
     
+    # Assuming weight is stored in user preferences
+    weight = user_preferences.get('weight', 70)  # default to 70kg if not specified
+    nutrition_plan = calculate_nutrition(weight, user_preferences['goal'])
+    
     workout_plan_df = create_workout_plan(user_preferences, df)
     cleaned_workout_plan = clean_up_exercises(workout_plan_df)
     save_workout_plan_to_mongodb(cleaned_workout_plan, email, user_preferences['goal'], user_preferences['fitnessLevel'])
     
-    return jsonify(cleaned_workout_plan)
+    # Include nutrition plan in the response
+    response_data = {
+        "workout_plan": cleaned_workout_plan,
+        "nutrition_plan": nutrition_plan
+    }
+    
+    return jsonify(response_data)
 
 def clean_up_exercises(workout_plan):
     cleaned_workout_plan = []
@@ -80,10 +90,12 @@ def fetch_user_preferences(email):
         user_data = users.find_one({'email': email})
         
         if user_data:
+            # Ensure that 'weight' is also retrieved and included in the response
             return {
-                "goal": user_data['goal'],
-                "fitnessLevel": user_data['fitnessLevel'],
-                "workoutDays": user_data['workoutDays']
+                "goal": user_data.get('goal', 'gainMuscle'),  # Default to 'gainMuscle' if not specified
+                "fitnessLevel": user_data.get('fitnessLevel', 'beginner'),  # Default to 'beginner' if not specified
+                "workoutDays": user_data.get('workoutDays', 3),  # Default to 3 days if not specified
+                "weight": user_data.get('weight', 70)  # Default to 70 kg if not specified
             }
         else:
             return None  # Handle the case where no user data is found
@@ -180,7 +192,21 @@ def create_strength_plan(df, goal, fitness_level, days, exercises_per_day):
 
     return selected_exercises
 
-
+def calculate_nutrition(weight, goal):
+    if goal == "gainMuscle":
+        calories = 44 * weight
+        protein = 1.5 * weight
+        fats = int((calories * 0.25) / 9)  # There are 9 calories in a gram of fat
+    elif goal == "loseWeight":
+        calories = 1500  # Static value for simplification
+        protein = 2 * weight
+        fats = int((calories * 0.20) / 9)
+    
+    return {
+        "Calories": calories,
+        "Protein": protein,
+        "Fats": fats
+    }
 
 
 @app.route('/tabs/trainer', methods=['POST'])
@@ -242,6 +268,8 @@ def create_or_update_weight_log(email, weight):
         upsert=True
     )
     client.close()
+    
+    
 
 @app.route('/')
 def home():
