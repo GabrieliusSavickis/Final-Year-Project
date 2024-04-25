@@ -51,6 +51,13 @@
       </ion-grid>
     </ion-card>
 
+    <ion-card class="nutrition-card">
+      <ion-card-title class="card-title">Nutrition Plan</ion-card-title>
+      <div class="nutrition-plan">
+        <canvas #nutritionCanvas></canvas>
+      </div>
+    </ion-card>
+
 
     <ion-card *ngIf="workoutPlan && workoutPlan.length > 0" class="workout-plan">
       <ion-card-header>

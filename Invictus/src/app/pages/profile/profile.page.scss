@@ -43,12 +43,13 @@ p {
   color: #666;
 }
 
-.workout-plan,
-.macro-plan {
+.workout-plan{
   margin: 15px;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
+
 
 ion-card-title {
   text-align: center;
@@ -58,48 +59,13 @@ ion-card-title {
 
 ion-item-divider {
   background-color: #ddd;
-  padding-start: 10px;
 }
 
 ion-label {
   font-size: 1em;
 }
 
-.chart-and-legend-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  padding: 15px;
-}
 
-.chart-container {
-  flex: 1;
-  min-width: 200px;
-}
-
-.chart-legend {
-  flex: 1;
-  padding: 15px;
-}
-
-.legend-color-box {
-  width: 20px;
-  height: 20px;
-  display: inline-block;
-  margin-right: 10px;
-}
-
-.carbs {
-  background-color: #007bff;
-}
-
-.protein {
-  background-color: #28a745;
-}
-
-.fat {
-  background-color: #dc3545;
-}
 
 /* Add some padding for ion-items in the form */
 ion-item {
@@ -122,7 +88,35 @@ ion-button {
   color: white;
 }
 
+canvas {
+  width: 300px !important;
+  height: 300px !important; // Adjust as necessary to fit your design
+}
+
+.nutrition-plan{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+}
+
+.nutrition-card{
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+}
+
+.card-title {
+  padding-top: 15px; /* Adjust the value as needed for your design */
+  display: block; /* Ensures it takes up the full width */
+  
+}
+
+
+
 /* Remove the border of the ion-item when it is focused */
 ion-item::part(native) {
   border: none;
 }
+
+

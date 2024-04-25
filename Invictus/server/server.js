@@ -342,6 +342,36 @@ app.get('/api/weekly-workout-summary', async (req, res) => {
   }
 });
 
+// Nutrition Plans Schema
+const nutritionPlanSchema = new mongoose.Schema({
+  email: String,
+  calories: Number,
+  protein: Number,
+  fats: Number,
+}, { collection: 'nutrition_plans' });
+
+const NutritionPlan = mongoose.model('NutritionPlan', nutritionPlanSchema);
+
+// Endpoint to fetch a user's nutrition plan by email
+app.get('/api/nutrition-plans/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    const nutritionPlan = await NutritionPlan.findOne({ email: email.toLowerCase() });
+    console.log('Nutrition Plan Found:', nutritionPlan);
+
+    if (nutritionPlan) {
+      res.status(200).json(nutritionPlan);
+    } else {
+      res.status(404).send({ message: 'Nutrition plan not found for the provided email' });
+    }
+  } catch (error) {
+    console.error('Failed to fetch nutrition plan:', error);
+    res.status(500).send({ message: 'Internal Server Error' });
+  }
+});
+
+
+
 
 // Define the job to check workout plan adjustments
 cron.schedule('*/2 * * * *', async () => {
