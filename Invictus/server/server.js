@@ -370,6 +370,36 @@ app.get('/api/nutrition-plans/:email', async (req, res) => {
   }
 });
 
+const intensityDecisionSchema = new mongoose.Schema({
+  email: String, // Assuming you have a reference to User model
+  increaseIntensity: Boolean,
+  timestamp: { type: Date, default: Date.now },
+}, { collection: 'intensity_decisions' });
+
+const IntensityDecision = mongoose.model('IntensityDecision', intensityDecisionSchema);
+
+app.post('/api/log-intensity-decision', async (req, res) => {
+  const { email, increaseIntensity } = req.body;
+
+  // Perform input validation as needed
+
+  try {
+    // Use the correct model name 'IntensityDecision' to create a new document
+    const intensityDecision = new IntensityDecision({
+      email: email, 
+      increaseIntensity: increaseIntensity, // Note: Use the same field name as in the schema
+      timestamp: new Date(), // This is optional since you have a default value in the schema
+    });
+
+    await intensityDecision.save();
+    res.status(201).json({ message: 'Intensity decision logged' });
+  } catch (error) {
+    console.error('Error logging intensity decision:', error);
+    res.status(500).json({ message: 'Error logging intensity decision' });
+  }
+});
+
+
 
 
 
