@@ -87,11 +87,26 @@ This Ionic-based mobile app is integrated with MongoDB for backend data manageme
 
 This deployment guide outlines the steps necessary to get the Invictus Fitness App running on your local machine for development and testing purposes. Follow the instructions carefully to ensure a successful setup.
 
+## Usage
+
+After installing the Invictus Fitness App, you can:
+
+- **Sign In/Sign Up**: Access your personal fitness dashboard by securely logging in or signing up.
+- **Track Your Fitness**: Monitor your daily physical activities and workouts through the app's built-in tracking features.
+- **Access Customized Plans**: Retrieve personalized workout routines and dietary recommendations tailored to your fitness goals.
+- **View Progress and Insights**: Utilize the interactive dashboard to view detailed charts and progress metrics that help you stay on track with your fitness journey.
+- **Admin Features**: If you have admin privileges, access the prediction algorithms and user data management from the admin panel for insights and adjustments.
+- **Admin Login**: Username:admin, Password:admin123
+
+These features are designed to provide a comprehensive fitness experience, making it easier for you to achieve and maintain your health and wellness goals.
+
+
 
 ## Acknowledgments
 
 - Special thanks to my supervisor John Healy for his invaluable guidance and support throughout the project.
 - Gratitude to all who provided feedback and testing to improve the app.
+- Niharika Pandit on Kaggle for the dataset. 
 
 ## Contact
 
