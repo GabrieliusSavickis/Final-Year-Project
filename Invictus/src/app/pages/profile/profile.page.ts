@@ -7,22 +7,22 @@ import { Chart, ChartConfiguration, ChartType, ChartData, ChartOptions } from 'c
 
 @Component({
   selector: 'app-profile-page',
-  templateUrl: './profile.page.html',
-  styleUrls: ['./profile.page.scss'],
+  templateUrl: './profile.page.html', // HTML template for the Profile page
+  styleUrls: ['./profile.page.scss'], // Styling for the Profile page
 })
-export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit  {
-  userProfile: any;
+export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit {
+  userProfile: any; // User profile data
   
-  phone: string;
-  age: number;
-  gender: string;
-  workoutPlan: any[] = []; // Adjust based on your actual data structure
-  goal: string = ''; // Added this
-  level: string = ''; // Added this
+  phone: string; // User's phone number
+  age: number; // User's age
+  gender: string; // User's gender
+  workoutPlan: any[] = []; // User's workout plan data
+  goal: string = ''; // User's fitness goal
+  level: string = ''; // User's fitness level
 
-  nutritionData: any;
-  @ViewChild('nutritionCanvas') nutritionCanvas!: ElementRef<HTMLCanvasElement>;
-  private nutritionChart: any;
+  nutritionData: any; // Nutrition data fetched from the server
+  @ViewChild('nutritionCanvas') nutritionCanvas!: ElementRef<HTMLCanvasElement>; // Reference to the nutrition chart canvas
+  private nutritionChart: any; // Nutrition chart instance
 
   
 
@@ -33,6 +33,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit  {
   }
 
   ngOnInit() {
+    // Subscribe to user profile updates
     this.userService.userProfile$.subscribe(profile => {
       console.log('Profile received:', profile);
       if (profile) {
@@ -48,15 +49,18 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit  {
   }
 
   ngOnDestroy() {
+    // Destroy the nutrition chart instance when component is destroyed
     if (this.nutritionChart) {
       this.nutritionChart.destroy();
     }
   }
 
   ngAfterViewInit() {
+    // Fetch nutrition data after the view has been initialized
     this.fetchNutritionData();
   }
 
+  // Fetch additional profile data from the server based on user email
   fetchProfileData(email: string) {
     this.httpClient.get(`http://localhost:3000/tabs/profile/${email}`).subscribe({
       next: (data: any) => {
@@ -76,6 +80,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit  {
     });
   }
 
+  // Fetch nutrition data from the server
   fetchNutritionData() {
     this.httpClient.get<{ Calories: number, Protein: number, Fats: number }>(`http://localhost:3000/api/nutrition-plans/gabrrielius@gmail.com`).subscribe(data => {
       this.createNutritionChart(data);
@@ -84,6 +89,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit  {
     });
   }
 
+  // Save user profile changes to the server
   saveProfile() {
     const profileData = {
       email: this.userProfile.email, // Make sure to send the email as an identifier
@@ -101,6 +107,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy, AfterViewInit  {
     });
 }
 
+// Create a pie chart to display nutrition data
 createNutritionChart(data: { Calories: number, Protein: number, Fats: number }) {
   if (this.nutritionChart) {
     this.nutritionChart.destroy(); // Destroy existing chart instance if exists
@@ -161,9 +168,7 @@ createNutritionChart(data: { Calories: number, Protein: number, Fats: number }) 
   });
 }
 
-
-
-
+// Logout the user
 logout() {
   this.auth.logout({ returnTo: `${window.location.origin}/login` } as LogoutOptions);
 }
