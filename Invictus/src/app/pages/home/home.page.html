@@ -33,8 +33,6 @@
     </button>
   </div>
 
-
-
   <ng-container *ngIf="todaysWorkout$ | async as todaysWorkout; else loadingTemplate">
     <div *ngIf="todaysWorkout && !todaysWorkout.completed; else workoutCompleteTemplate">
       <div class="workout-container">

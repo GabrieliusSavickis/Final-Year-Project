@@ -60,6 +60,22 @@ const workoutPlanSchema = new mongoose.Schema({
   fitnessLevel: String
 }, { collection: 'workout_plans' });  // Explicitly specifying the collection name
 
+// Define the schema for nutrition plans
+const nutritionPlanSchema = new mongoose.Schema({
+  email: String, // The email of the user
+  calories: Number, // The number of calories in the nutrition plan
+  protein: Number, // The amount of protein in the nutrition plan
+  fats: Number, // The amount of fats in the nutrition plan
+}, { collection: 'nutrition_plans' }); // Explicitly specify the collection name in the database
+
+// Define the schema for intensity decisions
+const intensityDecisionSchema = new mongoose.Schema({
+  email: String, // The email of the user
+  increaseIntensity: Boolean, // Whether to increase the intensity of the workout
+  timestamp: { type: Date, default: Date.now }, // The timestamp of the decision
+}, { collection: 'intensity_decisions' }); // Explicitly specify the collection name in the database
+
+
 // Create a model from the workout plan schema
 const WorkoutPlan = mongoose.model('WorkoutPlan', workoutPlanSchema);
 // Create a model from the user schema
@@ -373,13 +389,6 @@ app.get('/api/weekly-workout-summary', async (req, res) => {
   }
 });
 
-// Define the schema for nutrition plans
-const nutritionPlanSchema = new mongoose.Schema({
-  email: String, // The email of the user
-  calories: Number, // The number of calories in the nutrition plan
-  protein: Number, // The amount of protein in the nutrition plan
-  fats: Number, // The amount of fats in the nutrition plan
-}, { collection: 'nutrition_plans' }); // Explicitly specify the collection name in the database
 
 // Create a model from the nutrition plan schema
 const NutritionPlan = mongoose.model('NutritionPlan', nutritionPlanSchema);
@@ -402,12 +411,6 @@ app.get('/api/nutrition-plans/:email', async (req, res) => {
   }
 });
 
-// Define the schema for intensity decisions
-const intensityDecisionSchema = new mongoose.Schema({
-  email: String, // The email of the user
-  increaseIntensity: Boolean, // Whether to increase the intensity of the workout
-  timestamp: { type: Date, default: Date.now }, // The timestamp of the decision
-}, { collection: 'intensity_decisions' }); // Explicitly specify the collection name in the database
 
 // Create a model from the intensity decision schema
 const IntensityDecision = mongoose.model('IntensityDecision', intensityDecisionSchema);
