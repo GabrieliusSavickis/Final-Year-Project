@@ -257,16 +257,17 @@ export class ExercisesPage {
       ],
     }
 ];
-  constructor(private router: Router, public auth: AuthService) {}
+constructor(private router: Router, public auth: AuthService) {} // Constructor with Router and AuthService injections
+
   logout() {
-    this.auth.logout({ returnTo: `${window.location.origin}/login` } as LogoutOptions);
+    this.auth.logout({ returnTo: `${window.location.origin}/login` } as LogoutOptions); // Method to logout the user
   }
 
-  toggleCategory(category: ExerciseCategory) {
+  toggleCategory(category: ExerciseCategory) { // Method to toggle the expansion of exercise categories
     category.expanded = !category.expanded;
   }
 
-  showExerciseDetails(exercise: Exercise) {
-    this.router.navigate(['/exercise-details', exercise.id]);
+  showExerciseDetails(exercise: Exercise) { // Method to navigate to exercise details page
+    this.router.navigate(['/exercise-details', exercise.id]); // Navigating to exercise details page with exercise id
   }
 }
