@@ -60,9 +60,9 @@ const workoutPlanSchema = new mongoose.Schema({
   fitnessLevel: String
 }, { collection: 'workout_plans' });  // Explicitly specifying the collection name
 
-
-
+// Create a model from the workout plan schema
 const WorkoutPlan = mongoose.model('WorkoutPlan', workoutPlanSchema);
+// Create a model from the user schema
 const User = mongoose.model('User', userSchema);
 
 //app post
@@ -90,54 +90,68 @@ app.post('/tabs/trainer', async (req, res) => {
   }
 });
 
-// Get user data
+// Define a GET endpoint to fetch user data along with their workout plan
 app.get('/tabs/profile/:email', async (req, res) => {
   try {
+    // Extract the email from the request parameters and convert it to lowercase
     const email = req.params.email.toLowerCase();
+
+    // Use MongoDB's aggregation framework to fetch user data along with their workout plan
     const result = await User.aggregate([
-      { $match: { email } },
+      { $match: { email } }, // Match the user with the given email
       {
-        $lookup: {
+        $lookup: { // Perform a left outer join with the workout_plans collection
           from: "workout_plans",
           localField: "email",
           foreignField: "email",
           as: "workoutPlan"
         }
       },
-      { $unwind: { path: "$workoutPlan", preserveNullAndEmptyArrays: true } } // preserves users without workout plans
+      { $unwind: { path: "$workoutPlan", preserveNullAndEmptyArrays: true } } // Flatten the array of workout plans and preserve users without workout plans
     ]);
 
+    // If a user is found, return the user data, otherwise return a 404 status code
     if (result.length > 0) {
       res.json(result[0]);
     } else {
       res.status(404).json({ message: 'User not found' });
     }
   } catch (error) {
+    // Log the error and return a 500 status code if there is an error
     console.error('Aggregation error:', error);
     res.status(500).json({ message: 'Error retrieving user and workout plan data' });
   }
 });
 
+// Define a GET endpoint to fetch user data along with their weight logs
 app.get('/tabs/trainer/:email', async (req, res) => {
   try {
+    // Extract the email from the request parameters
     const email = req.params.email;
+
+    // Fetch the user data
     const user = await User.findOne({ email: email });
+
+    // If a user is found, fetch their weight logs and return the user data along with the weight logs
     if (user) {
-      // Fetching associated weight logs
-      const weightLogs = await WeightLog.findOne({ email: email }).sort({'weights.date': -1});
-      const userData = user.toObject();  // Convert Mongoose document to plain object
-      userData.weights = weightLogs ? weightLogs.weights : [];  // Add weight logs to user data
+      const weightLogs = await WeightLog.findOne({ email: email }).sort({ 'weights.date': -1 });
+      const userData = user.toObject();  // Convert the Mongoose document to a plain object
+      userData.weights = weightLogs ? weightLogs.weights : [];  // Add the weight logs to the user data
       res.json(userData);
     } else {
+      // If a user is not found, return a 404 status code
       res.status(404).send('User not found');
     }
   } catch (error) {
+    // Log the error and return a 500 status code if there is an error
     console.error('Error fetching user data:', error);
     res.status(500).send('Internal Server Error');
   }
 });
 
+// Define a POST endpoint to update or create user data
 app.post('/tabs/profile/update', async (req, res) => {
+  // Define the query, update, and options for the findOneAndUpdate method
   const query = { email: req.body.email };
   const update = req.body;
   const options = { upsert: true, new: true, setDefaultsOnInsert: true };
@@ -171,31 +185,34 @@ app.post('/update-weight', async (req, res) => {
   res.json(result);
 });
 
+// Define the schema for workout metrics
 const workoutMetricsSchema = new mongoose.Schema({
-  userId: String,
-  workoutDays: [String],
-  workoutStartTime: Number,
-  workoutEndTime: Number,
-  durationInSeconds: Number,
-  weeklyWorkoutTimeInSeconds: Number,
-  dateLogged: { type: Date, default: Date.now }
+  userId: String, // The ID of the user
+  workoutDays: [String], // The days when the user worked out
+  workoutStartTime: Number, // The start time of the workout
+  workoutEndTime: Number, // The end time of the workout
+  durationInSeconds: Number, // The duration of the workout in seconds
+  weeklyWorkoutTimeInSeconds: Number, // The total workout time in a week in seconds
+  dateLogged: { type: Date, default: Date.now } // The date when the metrics were logged
 }, {
-  collection: 'workout_metrics'
+  collection: 'workout_metrics' // Explicitly specify the collection name in the database
 });
 
+// Create a model from the workout metrics schema
 const WorkoutMetrics = mongoose.model('WorkoutMetrics', workoutMetricsSchema);
 
+// Define a POST endpoint for saving workout metrics
 app.post('/api/workout-metrics', async (req, res) => {
-  const { userId, workoutDays, workoutStartTime, workoutEndTime, durationInSeconds} = req.body;
+  const { userId, workoutDays, workoutStartTime, workoutEndTime, durationInSeconds } = req.body;
 
   try {
     // Convert string values to numbers if necessary.
     const metrics = new WorkoutMetrics({
       userId,
       workoutDays,
-      workoutStartTime: parseInt(workoutStartTime),
-      workoutEndTime: parseInt(workoutEndTime),
-      durationInSeconds: parseFloat(durationInSeconds),
+      workoutStartTime: parseInt(workoutStartTime), // Convert the start time to a number
+      workoutEndTime: parseInt(workoutEndTime), // Convert the end time to a number
+      durationInSeconds: parseFloat(durationInSeconds), // Convert the duration to a number
     });
 
     const savedMetrics = await metrics.save();
@@ -206,111 +223,124 @@ app.post('/api/workout-metrics', async (req, res) => {
   }
 });
 
+// Define a GET endpoint to fetch the workout days for a user in a week
 app.get('/api/workout-days/:email', async (req, res) => {
   try {
-    const email = req.params.email;
-    const startOfWeek = moment().startOf('week').toDate();
-    const endOfWeek = moment().endOf('week').toDate();
+    const email = req.params.email; // Extract the email from the request parameters
+    const startOfWeek = moment().startOf('week').toDate(); // Get the start of the week
+    const endOfWeek = moment().endOf('week').toDate(); // Get the end of the week
 
+    // Fetch the workouts for the user in the given week and sort them by date
     const workouts = await WorkoutMetrics.find({
       userId: email,
       dateLogged: { $gte: startOfWeek, $lte: endOfWeek }
-    }).sort({ dateLogged: 1 }); // Sort by dateLogged ascending
+    }).sort({ dateLogged: 1 });
 
-    const workoutDays = workouts.map(w => moment(w.dateLogged).format('dd')); // Returns ['Mo', 'Tu', ...]
-    res.json([...new Set(workoutDays)]); // Return unique days only
+    // Map the workouts to their days and return unique days only
+    const workoutDays = workouts.map(w => moment(w.dateLogged).format('dd'));
+    res.json([...new Set(workoutDays)]);
   } catch (error) {
+    // Log the error and return a 500 status code if there is an error
     console.error('Error retrieving workout days:', error);
     res.status(500).json({ message: 'Error retrieving workout days' });
   }
 });
 
+// Define a GET endpoint to fetch the total workout time for a user in a week
 app.get('/api/weekly-workout-time/:email', async (req, res) => {
   try {
-    const email = req.params.email;
-    const startOfWeek = moment().startOf('isoWeek'); // use isoWeek for consistency (Monday as the first day of the week)
-    const endOfWeek = moment().endOf('isoWeek');
+    const email = req.params.email; // Extract the email from the request parameters
+    const startOfWeek = moment().startOf('isoWeek'); // Get the start of the ISO week (Monday as the first day of the week)
+    const endOfWeek = moment().endOf('isoWeek'); // Get the end of the ISO week
 
+    // Fetch the workouts for the user in the given week
     const workouts = await WorkoutMetrics.find({
       userId: email,
       dateLogged: { $gte: startOfWeek.toDate(), $lte: endOfWeek.toDate() }
     });
 
+    // Calculate the total workout time in seconds
     const weeklyWorkoutTimeInSeconds = workouts.reduce((total, workout) => {
       return total + workout.durationInSeconds;
     }, 0);
 
+    // Return the total workout time in seconds
     res.json({ weeklyWorkoutTimeInSeconds });
   } catch (error) {
+    // Log the error and return a 500 status code if there is an error
     console.error('Error retrieving weekly workout time:', error);
     res.status(500).json({ message: 'Error retrieving weekly workout time' });
   }
 });
 
+// Define the schema for exercise completion
 const exerciseCompletionSchema = new mongoose.Schema({
-  userId: String,
-  exerciseTitle: String,
-  isCompleted: Boolean,
-  timestamp: Date,
+  userId: String, // The ID of the user
+  exerciseTitle: String, // The title of the exercise
+  isCompleted: Boolean, // Whether the exercise is completed
+  timestamp: Date, // The timestamp of the completion
 });
 
+// Create a model from the exercise completion schema
 const ExerciseCompletion = mongoose.model('ExerciseCompletion', exerciseCompletionSchema);
 
-app.post('/api/log-exercise-completion', async (req, res) => {
-  try {
-    const completion = new ExerciseCompletion(req.body);
-    await completion.save();
-    res.status(201).json(completion);
-  } catch (error) {
-    console.error('Error logging exercise completion:', error);
-    res.status(500).json({ message: 'Error logging exercise completion' });
-  }
-});
+// Create a model from the exercise completion schema
 
+// Define the schema for workout completion
 const workoutCompletionSchema = new mongoose.Schema({
-  userId: String,
-  dayCompleted: Date,
-  workoutId: mongoose.Schema.Types.ObjectId,
+  userId: String, // The ID of the user
+  dayCompleted: Date, // The date when the workout was completed
+  workoutId: mongoose.Schema.Types.ObjectId, // The ID of the completed workout
 });
 
+// Create a model from the workout completion schema
 const WorkoutCompletion = mongoose.model('WorkoutCompletion', workoutCompletionSchema);
 
+
+// Define a POST endpoint for logging workout completion
 app.post('/api/log-workout-completion', async (req, res) => {
   try {
+    // Create a new workout completion document from the request body
     const completion = new WorkoutCompletion(req.body);
+    // Save the workout completion document
     await completion.save();
+    // Send the saved document as the response
     res.status(201).json(completion);
   } catch (error) {
+    // Log the error and send a 500 status code if there is an error
     console.error('Error logging workout completion:', error);
     res.status(500).json({ message: 'Error logging workout completion' });
   }
 });
 
-// Define a new route to fetch the monthly workout summary data
+// Define a GET endpoint for fetching the weekly workout summary
 app.get('/api/weekly-workout-summary', async (req, res) => {
   console.log("Request received for weekly workout summary");
   try {
+    // Define the start and end of the ISO week (Monday as the first day of the week)
     const startOfWeek = moment().startOf('isoWeek').toDate();
     const endOfWeek = moment().endOf('isoWeek').toDate();
 
+    // Use MongoDB's aggregation framework to fetch the weekly workout summary
     const result = await WorkoutMetrics.aggregate([
       {
         $match: {
-          dateLogged: { $gte: startOfWeek, $lte: endOfWeek }
+          dateLogged: { $gte: startOfWeek, $lte: endOfWeek } // Match workouts in the given week
         }
       },
       {
         $project: {
-          dayOfWeek: { $dayOfWeek: '$dateLogged' },
-          durationInSeconds: 1,
-          workoutStartTime: { $toLong: "$workoutStartTime" },
-          workoutEndTime: { $toLong: "$workoutEndTime" }
+          dayOfWeek: { $dayOfWeek: '$dateLogged' }, // Project the day of the week
+          durationInSeconds: 1, // Project the duration in seconds
+          workoutStartTime: { $toLong: "$workoutStartTime" }, // Convert the start time to a long
+          workoutEndTime: { $toLong: "$workoutEndTime" } // Convert the end time to a long
         }
       },
       {
         $group: {
           _id: '$dayOfWeek',
           totalDuration: { $sum: '$durationInSeconds' },
+          // Calculate the average start and end times of the workouts
           averageStartTime: { $avg: '$workoutStartTime' },
           averageEndTime: { $avg: '$workoutEndTime' },
         }
@@ -323,10 +353,11 @@ app.get('/api/weekly-workout-summary', async (req, res) => {
     // Map the results to include the calculated average workout time and convert day numbers to names
     const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const enhancedResults = result.map(day => {
-      console.log(`Raw start and end times: ${day.averageStartTime}, ${day.averageEndTime}`); // Add this line
+      console.log(`Raw start and end times: ${day.averageStartTime}, ${day.averageEndTime}`);
+      // Calculate the average duration of the workouts
       const averageDuration = (day.averageEndTime - day.averageStartTime) / 1000;
       const enhancedDay = {
-        dayOfWeek: dayNames[day._id - 1],
+        dayOfWeek: dayNames[day._id - 1], // Convert the day number to a name
         totalDuration: day.totalDuration,
         averageDuration: isNaN(averageDuration) ? 0 : averageDuration
       };
@@ -342,17 +373,18 @@ app.get('/api/weekly-workout-summary', async (req, res) => {
   }
 });
 
-// Nutrition Plans Schema
+// Define the schema for nutrition plans
 const nutritionPlanSchema = new mongoose.Schema({
-  email: String,
-  calories: Number,
-  protein: Number,
-  fats: Number,
-}, { collection: 'nutrition_plans' });
+  email: String, // The email of the user
+  calories: Number, // The number of calories in the nutrition plan
+  protein: Number, // The amount of protein in the nutrition plan
+  fats: Number, // The amount of fats in the nutrition plan
+}, { collection: 'nutrition_plans' }); // Explicitly specify the collection name in the database
 
+// Create a model from the nutrition plan schema
 const NutritionPlan = mongoose.model('NutritionPlan', nutritionPlanSchema);
 
-// Endpoint to fetch a user's nutrition plan by email
+// Define a GET endpoint to fetch a user's nutrition plan by email
 app.get('/api/nutrition-plans/:email', async (req, res) => {
   try {
     const { email } = req.params;
@@ -370,14 +402,17 @@ app.get('/api/nutrition-plans/:email', async (req, res) => {
   }
 });
 
+// Define the schema for intensity decisions
 const intensityDecisionSchema = new mongoose.Schema({
-  email: String, // Assuming you have a reference to User model
-  increaseIntensity: Boolean,
-  timestamp: { type: Date, default: Date.now },
-}, { collection: 'intensity_decisions' });
+  email: String, // The email of the user
+  increaseIntensity: Boolean, // Whether to increase the intensity of the workout
+  timestamp: { type: Date, default: Date.now }, // The timestamp of the decision
+}, { collection: 'intensity_decisions' }); // Explicitly specify the collection name in the database
 
+// Create a model from the intensity decision schema
 const IntensityDecision = mongoose.model('IntensityDecision', intensityDecisionSchema);
 
+// Define a POST endpoint for logging intensity decisions
 app.post('/api/log-intensity-decision', async (req, res) => {
   const { email, increaseIntensity } = req.body;
 
@@ -386,7 +421,7 @@ app.post('/api/log-intensity-decision', async (req, res) => {
   try {
     // Use the correct model name 'IntensityDecision' to create a new document
     const intensityDecision = new IntensityDecision({
-      email: email, 
+      email: email,
       increaseIntensity: increaseIntensity, // Note: Use the same field name as in the schema
       timestamp: new Date(), // This is optional since you have a default value in the schema
     });
@@ -398,9 +433,6 @@ app.post('/api/log-intensity-decision', async (req, res) => {
     res.status(500).json({ message: 'Error logging intensity decision' });
   }
 });
-
-
-
 
 
 // Define the job to check workout plan adjustments
@@ -427,6 +459,3 @@ cron.schedule('*/2 * * * *', async () => {
     }
   }
 });
-
-
-
