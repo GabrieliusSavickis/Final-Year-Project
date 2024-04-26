@@ -18,6 +18,7 @@ def fetch_data_from_mongodb():
     
     # Fetch data from collections
     users_data = pd.DataFrame(list(db['users'].find())).drop(columns=['_id', '__v'])
+    users_data = pd.get_dummies(users_data, columns=['gender', 'goal', 'fitnessLevel'], drop_first=True)
     workout_metrics_data = pd.DataFrame(list(db['workout_metrics'].find())).drop(columns=['_id', '__v'])
     weight_logs_data = pd.DataFrame(list(db['weightlogs'].find())).drop(columns=['_id', '__v'])
     intensity_decisions_data = pd.DataFrame(list(db['intensity_decisions'].find())).drop(columns=['_id', '__v'])
@@ -38,6 +39,7 @@ def fetch_data_from_mongodb():
     print("Workout Completions Data:", workout_completions_data.shape)
     print(workout_completions_data.head())
 
+    
     return users_data, workout_metrics_data, weight_logs_data, intensity_decisions_data, workout_completions_data
 
 users, workout_metrics, weight_logs, intensity_decisions, workout_completions = fetch_data_from_mongodb()
@@ -58,32 +60,37 @@ print("After merging with intensity_decisions:", data.columns)
 data = pd.merge(data, weight_logs, on='email', how='left')
 print("After merging with weight_logs:", data.columns)
 
+# Convert 'dayCompleted' to a numerical value: number of days since the earliest date in the column
+earliest_day = pd.to_datetime(data['dayCompleted']).min()
+data['days_since_earliest'] = (pd.to_datetime(data['dayCompleted']) - earliest_day).dt.days
 
+# Handling the 'increaseIntensity' as the target variable
+# We do this conversion before dropping the 'increaseIntensity' column
+data['intensity_decision'] = data['increaseIntensity'].astype(int)
+
+# Set your target variable 'y' before dropping the related column
+y = data['intensity_decision']
+
+# Drop the original non-numeric columns and any other columns not needed for training
+X = data.drop(columns=['email', 'intensity_decision', 'timestamp', 'createdAt', 'updatedAt', 'weights', 'dayCompleted', 'increaseIntensity'])
 
 # Extracting the latest weight for each user
+# Ensure weights are sorted by date if you have multiple entries
 data['latest_weight'] = data['weights'].apply(lambda x: x[-1]['weight'] if isinstance(x, list) and x else np.nan)
 
 # Assuming 'weights' is sorted by date in descending order, calculate weight change
 # Calculate the change in weight only if there are at least two measurements
 data['weight_change'] = data['weights'].apply(lambda x: x[-1]['weight'] - x[0]['weight'] if isinstance(x, list) and len(x) > 1 else 0)
 
-# Normalizing data
-data[['weight_change']] = scaler.fit_transform(data[['weight_change']])
-
-# One-hot encoding for non-ordinal categorical variables
-data = pd.get_dummies(data, columns=['gender', 'goal', 'fitnessLevel'], drop_first=True)
-
-# Handling the 'increaseIntensity' as the target variable
-data['intensity_decision'] = data['increaseIntensity'].apply(lambda x: 1 if x else 0)
-
-y = data['intensity_decision']
-x = data.drop(columns=['email', 'intensity_decision', 'timestamp', 'createdAt', 'updatedAt', 'weights'])
+# Normalize 'weight_change' and 'days_since_earliest'
+data[['weight_change', 'days_since_earliest']] = scaler.fit_transform(data[['weight_change', 'days_since_earliest']])
 
 # Exporting the data to a CSV to check the merge and transformations
-x.to_csv('merged_data_check.csv', index=False)
+X.to_csv('merged_data_check.csv', index=False)
 
 # Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
 
 # Define the model
 model = keras.Sequential([
@@ -98,3 +105,21 @@ model.compile(
     loss='binary_crossentropy',  # Appropriate for binary classification
     metrics=['accuracy']  # Accuracy is a common metric for classification tasks
 )
+
+# Train the model
+history = model.fit(
+    X_train,
+    y_train,
+    epochs=50,  # You may want to adjust the number of epochs
+    batch_size=32,  # Batch size is the number of samples per gradient update
+    validation_split=0.2  # Use part of the training data as validation data
+)
+
+# Evaluate the model
+test_loss, test_accuracy = model.evaluate(X_test, y_test)
+print(f"Test Accuracy: {test_accuracy}")
+
+# Use the model to make predictions
+predictions = model.predict(X_test)
+
+model.save('intensity_decision_model.h5')
