@@ -33,7 +33,7 @@
     </button>
   </div>
 
- 
+
 
   <ng-container *ngIf="todaysWorkout$ | async as todaysWorkout; else loadingTemplate">
     <div *ngIf="todaysWorkout && !todaysWorkout.completed; else workoutCompleteTemplate">
@@ -74,9 +74,9 @@
     </div>
   </ng-template>
 
-   
-   <!-- Overall Workout Time Section in a card -->
-   <ion-card class="overall-workout-time-card">
+
+  <!-- Overall Workout Time Section in a card -->
+  <ion-card class="overall-workout-time-card">
     <ion-card-header>
       <ion-card-title>Overall Workout Time This Week</ion-card-title>
     </ion-card-header>
