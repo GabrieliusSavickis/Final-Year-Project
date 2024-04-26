@@ -19,19 +19,20 @@ interface WorkoutSummary {
 })
 export class AdminPage implements OnInit, OnDestroy{
 
-  @ViewChild('chartCanvas') chartCanvas!: ElementRef<HTMLCanvasElement>;
-  private chart!: Chart;
-  private updateSubscription!: Subscription;
+  @ViewChild('chartCanvas') chartCanvas!: ElementRef<HTMLCanvasElement>; // Reference to the chart canvas
+  private chart!: Chart; // Chart instance
+  private updateSubscription!: Subscription; // Subscription for periodic updates
 
-  @ViewChild('averageChartCanvas') averageChartCanvas!: ElementRef<HTMLCanvasElement>;
-  private averageChart!: Chart;
+  @ViewChild('averageChartCanvas') averageChartCanvas!: ElementRef<HTMLCanvasElement>; // Reference to the average chart canvas
+  private averageChart!: Chart; // Average chart instance
 
-  increaseIntensity: boolean | undefined;
+  increaseIntensity: boolean | undefined; // Prediction result for intensity increase
 
   constructor(public auth: AuthService, private router: Router, 
     private http: HttpClient, private intensityService: IntensityService) { }
 
   ngOnInit() {
+    // Fetch intensity prediction result on component initialization
     this.intensityService.getIntensityPrediction().subscribe({
       next: (result) => {
         this.increaseIntensity = result.increase_intensity;
@@ -51,6 +52,7 @@ export class AdminPage implements OnInit, OnDestroy{
  
 
   ngOnDestroy() {
+    // Unsubscribe from update subscription and destroy charts on component destruction
     if (this.updateSubscription) {
       this.updateSubscription.unsubscribe();
     }
@@ -62,6 +64,7 @@ export class AdminPage implements OnInit, OnDestroy{
     }
   }
 
+  // Create a bar chart to display weekly workout summary
   createChart(labels: string[], data: number[]) {
     if (this.chart) {
       this.chart.destroy(); // Ensure the chart is destroyed
@@ -100,6 +103,7 @@ export class AdminPage implements OnInit, OnDestroy{
     });
   }
   
+  // Create a line chart to display average workout durations
   createAverageChart(labels: string[], averageDurations: number[]) {
     if (this.averageChart) {
       this.averageChart.destroy(); // Ensure the chart is destroyed
@@ -139,6 +143,7 @@ export class AdminPage implements OnInit, OnDestroy{
   }
 
 
+  // Fetch weekly workout summary from the server
   loadWeeklyWorkoutSummary() {
     this.http.get<any[]>('http://localhost:3000/api/weekly-workout-summary').subscribe(data => {
       const labels = data.map(item => item.dayOfWeek); // Use the day names as labels
@@ -156,6 +161,7 @@ export class AdminPage implements OnInit, OnDestroy{
     });
   }
 
+  // Logout function
   logout() {
     this.auth.logout();
   }
