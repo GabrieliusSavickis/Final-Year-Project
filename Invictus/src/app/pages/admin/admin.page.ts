@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Chart, ChartType } from 'chart.js/auto';
 import { interval, Subscription } from 'rxjs';
+import { IntensityService } from '../../services/intensity.service';
 
 interface WorkoutSummary {
   _id: number;
@@ -25,11 +26,21 @@ export class AdminPage implements OnInit, OnDestroy{
   @ViewChild('averageChartCanvas') averageChartCanvas!: ElementRef<HTMLCanvasElement>;
   private averageChart!: Chart;
 
-  
+  increaseIntensity: boolean | undefined;
 
-  constructor(public auth: AuthService, private router: Router, private http: HttpClient) { }
+  constructor(public auth: AuthService, private router: Router, 
+    private http: HttpClient, private intensityService: IntensityService) { }
 
   ngOnInit() {
+    this.intensityService.getIntensityPrediction().subscribe({
+      next: (result) => {
+        this.increaseIntensity = result.increase_intensity;
+      },
+      error: (error) => {
+        console.error('There was an error retrieving the intensity prediction', error);
+      }
+    });
+  
     this.loadWeeklyWorkoutSummary();
     // Polling every 30 seconds
     this.updateSubscription = interval(30000).subscribe(

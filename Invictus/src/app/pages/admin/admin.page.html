@@ -11,6 +11,22 @@
 
 <ion-content>
   <!-- Your admin page content goes here -->
+  <div *ngIf="increaseIntensity !== undefined">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Prediction Result</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          The predicted intensity decision is: 
+          <span *ngIf="increaseIntensity; else decreaseIntensity">Increase intensity</span>
+          <ng-template #decreaseIntensity>Do not increase intensity</ng-template>
+          <br>
+          {{ increaseIntensity ? "Increase intensity for individuals aged 17-24, Male, Gaining Muscle, Beginner, with Workout Days 3." : "Do not increase intensity." }}
+        </p>
+      </ion-card-content>
+    </ion-card>
+  </div>
   <ion-card>
   <div>
     <canvas #chartCanvas></canvas>

@@ -18,16 +18,27 @@ def fetch_data_from_mongodb():
     
     # Fetch data from collections
     users_data = pd.DataFrame(list(db['users'].find())).drop(columns=['_id', '__v'])
-    users_data = pd.get_dummies(users_data, columns=['gender', 'goal', 'fitnessLevel'], drop_first=True)
     workout_metrics_data = pd.DataFrame(list(db['workout_metrics'].find())).drop(columns=['_id', '__v'])
     weight_logs_data = pd.DataFrame(list(db['weightlogs'].find())).drop(columns=['_id', '__v'])
     intensity_decisions_data = pd.DataFrame(list(db['intensity_decisions'].find())).drop(columns=['_id', '__v'])
     workout_completions_data = pd.DataFrame(list(db['workoutcompletions'].find())).drop(columns=['_id', '__v'])
 
+    # After fetching the data from MongoDB
+    weight_logs_data['weights'] = weight_logs_data['weights'].apply(lambda x: sorted(x, key=lambda y: y['date']))
+
+    # Calculate weight change for each user
+    # Ensure there are at least two weight entries to compute the change
+    weight_logs_data['weight_change'] = weight_logs_data['weights'].apply(
+        lambda x: x[-1]['weight'] - x[0]['weight'] if len(x) > 1 else 0
+    )
+
+    # Extract the user's email and weight change into a new DataFrame
+    weight_change_data = weight_logs_data[['email', 'weight_change']]
+
     # Close the MongoDB connection
     client.close()
     
-    # Print the size of each DataFrame and a sample of the data
+     # Print the size of each DataFrame and a sample of the data
     print("Users Data:", users_data.shape)
     print(users_data.head())
     print("Workout Metrics Data:", workout_metrics_data.shape)
@@ -38,13 +49,17 @@ def fetch_data_from_mongodb():
     print(intensity_decisions_data.head())
     print("Workout Completions Data:", workout_completions_data.shape)
     print(workout_completions_data.head())
+    
 
     
-    return users_data, workout_metrics_data, weight_logs_data, intensity_decisions_data, workout_completions_data
+    return users_data, workout_metrics_data, weight_change_data, intensity_decisions_data, workout_completions_data
 
-users, workout_metrics, weight_logs, intensity_decisions, workout_completions = fetch_data_from_mongodb()
+users, workout_metrics, weight_change, intensity_decisions, workout_completions = fetch_data_from_mongodb()
 
-scaler = StandardScaler()
+users = pd.get_dummies(users, columns=['gender', 'goal', 'fitnessLevel'], drop_first=False)
+print("Columns after one-hot encoding:", users.columns.tolist())
+
+
 
 # Set workout_completion to 1 for each entry in workout_completions since they represent completed workouts
 workout_completions['workout_completion'] = 1
@@ -57,7 +72,7 @@ data = pd.merge(users, workout_completions, on='email', how='left')
 print("After merging with workout_completions:", data.columns)
 data = pd.merge(data, intensity_decisions, on='email', how='left')
 print("After merging with intensity_decisions:", data.columns)
-data = pd.merge(data, weight_logs, on='email', how='left')
+data = pd.merge(data, weight_change, on='email', how='left')
 print("After merging with weight_logs:", data.columns)
 
 # Convert 'dayCompleted' to a numerical value: number of days since the earliest date in the column
@@ -68,23 +83,26 @@ data['days_since_earliest'] = (pd.to_datetime(data['dayCompleted']) - earliest_d
 # We do this conversion before dropping the 'increaseIntensity' column
 data['intensity_decision'] = data['increaseIntensity'].astype(int)
 
-# Set your target variable 'y' before dropping the related column
-y = data['intensity_decision']
-
-# Drop the original non-numeric columns and any other columns not needed for training
-X = data.drop(columns=['email', 'intensity_decision', 'timestamp', 'createdAt', 'updatedAt', 'weights', 'dayCompleted', 'increaseIntensity'])
-
-# Extracting the latest weight for each user
-# Ensure weights are sorted by date if you have multiple entries
-data['latest_weight'] = data['weights'].apply(lambda x: x[-1]['weight'] if isinstance(x, list) and x else np.nan)
-
-# Assuming 'weights' is sorted by date in descending order, calculate weight change
-# Calculate the change in weight only if there are at least two measurements
-data['weight_change'] = data['weights'].apply(lambda x: x[-1]['weight'] - x[0]['weight'] if isinstance(x, list) and len(x) > 1 else 0)
-
+scaler = StandardScaler()
 # Normalize 'weight_change' and 'days_since_earliest'
 data[['weight_change', 'days_since_earliest']] = scaler.fit_transform(data[['weight_change', 'days_since_earliest']])
 
+data['gender_male'] = data['gender_male'].astype(int)
+data['goal_gainMuscle'] = data['goal_gainMuscle'].astype(int)
+data['fitnessLevel_beginner'] = data['fitnessLevel_beginner'].astype(int)
+
+# Drop the original non-numeric columns and any other columns not needed for training
+columns_to_drop = ['email', 'intensity_decision', 'dayCompleted', 'increaseIntensity']
+if 'timestamp' in data.columns: columns_to_drop.append('timestamp')
+if 'createdAt' in data.columns: columns_to_drop.append('createdAt')
+if 'updatedAt' in data.columns: columns_to_drop.append('updatedAt')
+if 'weights' in data.columns: columns_to_drop.append('weights')  # Only drop 'weights' if it exists
+if 'days_since_earliest' in data.columns: columns_to_drop.append('days_since_earliest')  # Dropping 'days_since_earliest'
+
+X = data.drop(columns=columns_to_drop)
+
+# Set your target variable 'y' before dropping the related column
+y = data['intensity_decision']
 # Exporting the data to a CSV to check the merge and transformations
 X.to_csv('merged_data_check.csv', index=False)
 
@@ -122,4 +140,4 @@ print(f"Test Accuracy: {test_accuracy}")
 # Use the model to make predictions
 predictions = model.predict(X_test)
 
-model.save('intensity_decision_model.h5')
+model.save('intensity_decision_model.keras')
