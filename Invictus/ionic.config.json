@@ -1,7 +1,8 @@
 {
   "name": "Invictus",
   "integrations": {
-    "capacitor": {}
+    "capacitor": {},
+    "cordova": {}
   },
   "type": "angular"
 }
