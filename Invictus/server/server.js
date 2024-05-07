@@ -24,6 +24,13 @@ app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
+app.get('/', (req, res) => {
+  res.send('Welcome to the Invictus App!');
+});
+
+app.use('/favicon.ico', express.static('path/to/favicon.ico'));
+
+
 const userSchema = mongoose.Schema({
   height: Number,
   weight: Number,
