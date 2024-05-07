@@ -21,12 +21,15 @@ import { NgChartsModule } from 'ng2-charts';
     domain: 'dev-jzak5ybyhpmswbfo.us.auth0.com',
     clientId: 'QFrDXSAPNwphdYpiXJdE21QqMUR637vY',
     authorizationParams: {
-      redirect_uri: window.location.origin
+      // Check if the app is running in a browser or mobile environment:
+      redirect_uri: window.location.origin.includes('localhost')
+        ? window.location.origin // Development URL for the web environment
+        : 'io.ionic.starter://dev-jzak5ybyhpmswbfo.us.auth0.com/android/io.ionic.starter/callback' // Mobile deep link
     }
   }),
   IonicStorageModule.forRoot()
 ],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
-  bootstrap: [AppComponent],
+  bootstrap: [AppComponent], 
 })
 export class AppModule {}

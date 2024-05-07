@@ -16,6 +16,7 @@ export class LoginPage {
   ngOnInit() {
     // Subscribe to authentication state changes
     this.auth.isAuthenticated$.subscribe((isAuthenticated) => {
+      console.log('Authentication State:', isAuthenticated);
       if (isAuthenticated) {
         // If authenticated, navigate to the home page
         this.router.navigate(['/tabs/home']);
