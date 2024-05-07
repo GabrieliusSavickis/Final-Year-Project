@@ -6,7 +6,7 @@
     "node-cron": "^3.0.3"
   },
     "scripts": {
-      "start": "node server.js"
+      "start": "node Invictus/server/server.js"
   }
 }
 
