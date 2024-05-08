@@ -259,7 +259,7 @@ def adjust_intensity():
     return jsonify({"message": "Workout intensity updated", "plan": cleaned_workout_plan}), 200
 
 def update_user_data(email, data):
-    client = MongoClient('<your-mongodb-connection-string>')
+    client = MongoClient('mongodb+srv://invictus:invictusfyp@clusterfyp.3lmfd7v.mongodb.net')
     db = client['Users']
     users = db['users']
     
@@ -268,7 +268,7 @@ def update_user_data(email, data):
     client.close()
 
 def create_or_update_weight_log(email, weight):
-    client = MongoClient('<your-mongodb-connection-string>')
+    client = MongoClient('mongodb+srv://invictus:invictusfyp@clusterfyp.3lmfd7v.mongodb.net')
     db = client['Users']
     weight_logs = db['weight_logs']
     
